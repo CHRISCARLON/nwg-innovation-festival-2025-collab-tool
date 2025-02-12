@@ -1,9 +1,10 @@
 import os
+import json
 
 from operator import itemgetter
 from typing import Optional, Literal
-from os_endpoints import NGDFeaturesAPIEndpoint
-from helper_functions import fetch_data, fetch_data_auth
+from .os_endpoints import NGDFeaturesAPIEndpoint
+from .helper_functions import fetch_data, fetch_data_auth
 
 class OSDataObject:
     def __init__(self):

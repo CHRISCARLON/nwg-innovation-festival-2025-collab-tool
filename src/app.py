@@ -1,58 +1,26 @@
-from robyn import Robyn, Request, jsonify
-from os_lib.os_data_object import OSDataObject
+from robyn import Robyn, Request, Response
+from robyn.logger import Logger
+from robyn_lib.ngd_features import get_features, get_collections
+from datetime import datetime
 
 app = Robyn(__file__)
 
-@app.post("/features")
-def get_features(request: Request):
-    try:
-        # Parse the request body
-        body = request.json()
+# SET UP LOGGER TO CAPTURE ALL REQUESTS
+logger = Logger()
 
-        # Extract collection_id and usrn from request body
-        collection_id = body.get('collection_id')
-        usrn = body.get('usrn')
+@app.before_request()
+async def log_request(request: Request):
+    logger.info(f"Request: method={request.method}, path={request.url.path}, ip_address={request.ip_addr}, time={datetime.now()}")
+    return request
 
-        # Validate required fields
-        if not collection_id:
-            return {
-                "status_code": 400,
-                "headers": {"Content-Type": "application/json"},
-                "description": "Bad Request",
-                "data": jsonify({"error": "collection_id is required"})
-            }
+@app.after_request()
+async def log_response(response: Response):
+    logger.info(f"Response: status={response.status_code}, type={response.response_type}")
+    return response
 
-        # Initialise OS Data Object
-        os_data = OSDataObject()
-
-        # Get features
-        if usrn:
-            features = os_data.get_collection_features(
-                collection_id=collection_id,
-                query_attr="usrn",
-                query_attr_value=usrn
-            )
-        else:
-            features = os_data.get_collection_features(
-                collection_id=collection_id
-            )
-
-        # Return successful response
-        return {
-            "status_code": 200,
-            "headers": {"Content-Type": "application/json"},
-            "description": "OK",
-            "data": jsonify(features)
-        }
-
-    except Exception as e:
-        return {
-            "status_code": 500,
-            "headers": {"Content-Type": "application/json"},
-            "description": "Internal Server Error",
-            "data": jsonify({"error": str(e)})
-        }
+# DEFINE ROUTES
+app.get("/features")(get_features.get_features_route)
+app.get("/collections")(get_collections.get_all_collections_route)
 
 if __name__ == "__main__":
-    app.add_response_header("Server", "Robyn")
     app.start(port=8080)
