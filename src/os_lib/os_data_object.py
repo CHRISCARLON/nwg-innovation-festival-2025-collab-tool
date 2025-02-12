@@ -1,10 +1,12 @@
 import os
-import json
 
+from typing import Optional, Literal, Dict, Any
+from urllib.parse import urlencode
 from operator import itemgetter
-from typing import Optional, Literal
+
 from .os_endpoints import NGDFeaturesAPIEndpoint
-from .helper_functions import fetch_data, fetch_data_auth
+from .request_functions import fetch_data, fetch_data_auth
+
 
 class OSDataObject:
     def __init__(self):
@@ -51,27 +53,49 @@ class OSDataObject:
             raise
 
     def get_collection_features(
-        self,
-        collection_id: str,
-        query_attr: Optional[Literal["usrn"]] = None,
-        query_attr_value: Optional[str] = None
-    ):
-        """
-        Fetches collection features with optional USRN filter
-        Args:
-            collection_id: str - The ID of the collection
-            query_attr: Optional[Literal["usrn"]] - Optional query attribute (only "usrn" allowed at the moment)
-            query_attr_value: Optional[str] - Value for the query attribute (e.g. USRN number)
-        Returns:
-            API response with collection features
-        """
-        endpoint: str = NGDFeaturesAPIEndpoint.COLLECTION_FEATURES.value.format(collection_id)
+            self,
+            collection_id: str,
+            usrn_attr: Optional[Literal["usrn"]] = None,
+            usrn_attr_value: Optional[str] = None,
+            bbox: Optional[str] = None,
+            bbox_crs: Optional[str] = None,
+            crs: Optional[str] = None
+        ):
+            """
+            Fetches collection features with optional USRN filter or bbox parameters
+            Args:
+                collection_id: str - The ID of the collection
+                query_attr: Optional[Literal["usrn"]] - Optional query attribute (only "usrn" allowed at the moment)
+                query_attr_value: Optional[str] - Value for the query attribute (e.g. USRN number)
+                bbox: Optional[str] - Bounding box parameter
+                bbox_crs: Optional[str] - CRS for the bounding box
+                crs: Optional[str] - CRS for the response
+            Returns:
+                API response with collection features
+            """
+            endpoint: str = NGDFeaturesAPIEndpoint.COLLECTION_FEATURES.value.format(collection_id)
 
-        if query_attr and query_attr_value:
-            endpoint = f"{endpoint}?filter={query_attr}%3D{query_attr_value}"
+            # Build query parameters
+            query_params: Dict[str, Any] = {}
 
-        try:
-            result = fetch_data_auth(endpoint)
-            return result
-        except Exception:
-            raise
+            # Add USRN filter if provided
+            if usrn_attr and usrn_attr_value:
+                query_params['filter'] = f"{usrn_attr}={usrn_attr_value}"
+
+            # Add bbox parameters if provided
+            if bbox:
+                query_params['bbox'] = bbox
+            if bbox_crs:
+                query_params['bbox-crs'] = bbox_crs
+            if crs:
+                query_params['crs'] = crs
+
+            # Append query parameters to endpoint if any exist
+            if query_params:
+                endpoint = f"{endpoint}?{urlencode(query_params)}"
+
+            try:
+                result = fetch_data_auth(endpoint)
+                return result
+            except Exception:
+                raise

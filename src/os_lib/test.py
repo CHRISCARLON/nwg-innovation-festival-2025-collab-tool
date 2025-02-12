@@ -1,5 +1,4 @@
 from os_data_object import OSDataObject
-from pprint import pprint
 
 if __name__ == "__main__":
     os_object = OSDataObject()
