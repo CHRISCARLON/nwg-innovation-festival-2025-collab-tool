@@ -87,11 +87,13 @@ def create_api_url(bbox_coords: tuple, base_url: str = "http://localhost:8080/fe
 
 if __name__ == "__main__":
     try:
-        # Example USRN - replace with actual USRN
+        # Test USRN
         test_usrn = "11720125"
 
         # Get bounding box coordinates
         bbox_coords = fetch(test_usrn, buffer_distance=50)
+
+        # Check coords
         print(bbox_coords)
 
         if bbox_coords:

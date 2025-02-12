@@ -99,6 +99,7 @@ def filter_feature_properties(feature: dict, collection_id: str) -> dict:
 
     return essential_props
 
+# TODO add match statements!
 def get_features(
     collection_id: str,
     usrn: Optional[str] = None,
@@ -148,6 +149,7 @@ def get_features(
 
     raise ValueError(f"Unsupported collection_id: {collection_id}")
 
+# TODO add match statements!
 def get_features_route(query_params: QueryParams) -> Response:
     """API route to get features data with support for both RAMI and LUS collections"""
     try:
