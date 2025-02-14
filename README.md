@@ -49,7 +49,7 @@ The bbox, bbox_crs, and crs query parametres use the British National Grid (EPSG
 
 ## Frontend 
 
-Currently building a basic frontend for this too!
+Currently building a basic frontend for this too - bit crap at the moment but will look better when done!
 
 ![Screenshot 2025-02-14 at 23 22 13](https://github.com/user-attachments/assets/74a9b63f-c64c-4b77-8e82-8f611146c243)
 
