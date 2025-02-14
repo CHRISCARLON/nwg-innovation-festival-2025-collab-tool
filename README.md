@@ -46,3 +46,11 @@ curl "http://localhost:8080/land-use?collection_id=lus-fts-site-1&usrn=11720125"
 ## Coordinate System Note
 
 The bbox, bbox_crs, and crs query parametres use the British National Grid (EPSG:27700) coordinate system.
+
+## Frontend 
+
+Currently building a basic frontend for this too
+
+![Screenshot 2025-02-14 at 23 22 13](https://github.com/user-attachments/assets/74a9b63f-c64c-4b77-8e82-8f611146c243)
+
+
