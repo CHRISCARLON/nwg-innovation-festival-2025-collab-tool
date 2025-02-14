@@ -8,14 +8,13 @@ Example flow for Land Use Query:
 
 ![Screenshot 2025-02-14 at 13 37 07](https://github.com/user-attachments/assets/7d05f8f4-cb00-490d-ab88-926bec951c69)
 
-
 ### 1. Routing and Asset Management Information (RAMI) Query
 
 ```bash
-curl "http://localhost:8080/features?collection_id=trn-rami-specialdesignationline-1&usrn=8100239"
+curl "http://localhost:8080/rami?collection_id=trn-rami-specialdesignationline-1&usrn=8100239"
 ```
 
-- **Purpose**: Retrieve Routing and Asset Management Information about a specific street - e.g. engineering difficulties/traffic sensitivity. 
+- **Purpose**: Retrieve Routing and Asset Management Information about a specific street - e.g. engineering difficulties/traffic sensitivity.
 - **Parameters**:
   - `collection_id`: Identifies the special designation line collection within the RAMI data
   - `usrn`: Unique Street Reference Number - used as a direct filter
@@ -23,10 +22,10 @@ curl "http://localhost:8080/features?collection_id=trn-rami-specialdesignationli
 ### 2. Land Use Query
 
 ```bash
-curl "http://localhost:8080/features?collection_id=lus-fts-site-1&usrn=11720125"
+curl "http://localhost:8080/land-use?collection_id=lus-fts-site-1&usrn=11720125"
 ```
 
-- **Purpose**: Retrieve land use information for a specific geographic area - e.g. land for commercial and residential purposes, etc. 
+- **Purpose**: Retrieve land use information for a specific geographic area - e.g. land for commercial and residential purposes, etc.
 - **Parameters**:
   - `collection_id`: Identifies the land use collection within the land use data
   - `usrn`: Unique Street Reference Number - used to calculate bbox
@@ -46,4 +45,4 @@ curl "http://localhost:8080/features?collection_id=lus-fts-site-1&usrn=11720125"
 
 ## Coordinate System Note
 
-The queries use the British National Grid (EPSG:27700) coordinate system, which is standard for UK-based geographic data.
+The bbox, bbox_crs, and crs query parametres use the British National Grid (EPSG:27700) coordinate system.

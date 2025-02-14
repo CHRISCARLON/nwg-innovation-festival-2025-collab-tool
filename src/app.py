@@ -1,8 +1,11 @@
 from robyn import Robyn, Request, Response
 from robyn.logger import Logger
-from robyn_lib.ngd_features import get_features, get_collections
+from robyn_lib.ngd_features import get_collections
 from datetime import datetime
 
+from robyn_lib.ngd_features import get_rami, get_land_use
+
+# DEFINE APP AND LOGGER
 app = Robyn(__file__)
 logger = Logger()
 
@@ -19,13 +22,13 @@ def get_log_level_for_status(status_code: int) -> str:
 @app.before_request()
 async def log_request(request: Request):
     """Log requests made"""
-    logger.info(f"Request: method={request.method}, params={request.query_params}, path={request.url.path}, ip_address={request.ip_addr}, time={datetime.now()}")
+    logger.info(f"Request: method={request.method} params={request.query_params}, path={request.url.path}, params={request.body}, ip_address={request.ip_addr}, time={datetime.now()}")
     return request
 
 @app.after_request()
 async def log_response(response: Response):
     """Log request outputs for erros etc"""
-    # Log with appropriate level based on status code
+    # Log with the appropriate level based on status code
     log_level = get_log_level_for_status(response.status_code)
     log_message = f"Response: status={response.status_code}, type={response.response_type}"
 
@@ -40,7 +43,8 @@ async def log_response(response: Response):
     return response
 
 # DEFINE ROUTES
-app.get("/features")(get_features.get_features_route)
+app.get("/rami")(get_rami.get_rami_route)
+app.get("/land-use")(get_land_use.get_land_use_route)
 app.get("/collections")(get_collections.get_all_collections_route)
 
 if __name__ == "__main__":

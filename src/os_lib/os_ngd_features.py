@@ -1,6 +1,9 @@
 from typing import List
 from enum import Enum
 
+# Define the NGDFeaturesAPI
+# This is used to map the collection_id to the correct dataset
+# It also contains a method to return all the collections in a list
 class NGDFeaturesAPI(Enum):
     def __init__(self, *args):
         self._value_ = args

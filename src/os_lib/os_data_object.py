@@ -9,14 +9,14 @@ from .request_functions import fetch_data, fetch_data_auth
 
 
 class OSDataObject:
-    def __init__(self):
-        """Initialise with API key"""
+    def __init__(self) -> None:
+        """Initialise with the API key"""
         self.api_key = os.getenv('OS_KEY')
         if not self.api_key:
-            raise ValueError("API key must be provided through environment variable 'OS_KEY'")
+            raise ValueError("An API key must be provided through the environment variable 'OS_KEY'")
 
-    def get_all_collections(self):
-        """ TBC """
+    def get_all_collections(self) -> list[Any]:
+        """ Get all available collections """
         endpoint: str = NGDFeaturesAPIEndpoint.COLLECTIONS.value
         try:
             result = fetch_data(endpoint)
@@ -25,8 +25,8 @@ class OSDataObject:
         except Exception:
             raise
 
-    def get_collection(self, collection_id: str):
-        """ TBC """
+    def get_collection(self, collection_id: str) -> dict[Any, Any]:
+        """ Get a single collection """
         endpoint: str = NGDFeaturesAPIEndpoint.COLLECTION_INFO.value.format(collection_id)
         try:
             result = fetch_data(endpoint)
@@ -34,8 +34,8 @@ class OSDataObject:
         except Exception:
             raise
 
-    def get_collection_schema(self, collection_id: str):
-        """ TBC """
+    def get_collection_schema(self, collection_id: str) -> dict[Any, Any]:
+        """ Get the schema of a single collection """
         endpoint: str = NGDFeaturesAPIEndpoint.COLLECTION_SCHEMA.value.format(collection_id)
         try:
             result = fetch_data(endpoint)
@@ -43,8 +43,13 @@ class OSDataObject:
         except Exception:
             raise
 
-    def get_collection_queryables(self, collection_id: str):
-        """ TBC """
+    def get_collection_queryables(self, collection_id: str) -> dict[Any, Any]:
+        """ 
+        Get the queryables of a single collection 
+        
+        This will tell you what you can filter by - e.g. USRN, OSID, TOID, etc
+        
+        """
         endpoint: str = NGDFeaturesAPIEndpoint.COLLECTION_QUERYABLES.value.format(collection_id)
         try:
             result = fetch_data(endpoint)
@@ -60,7 +65,7 @@ class OSDataObject:
             bbox: Optional[str] = None,
             bbox_crs: Optional[str] = None,
             crs: Optional[str] = None
-        ):
+        ) -> dict[Any, Any]:
             """
             Fetches collection features with optional USRN filter or bbox parameters
             Args:
