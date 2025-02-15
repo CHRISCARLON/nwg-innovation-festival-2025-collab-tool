@@ -1,6 +1,6 @@
 from ..interfaces.interfaces import OSFeatures, BBOXGeometry, LLMSummary
-from ..processors.process_bbox import get_bbox_from_usrn
-from ..processors.process_features import process_features
+from ..processors.bbox_processor import get_bbox_from_usrn
+from ..processors.feature_processor import process_features
 from ..processors.langchain_processor import process_with_langchain
 from typing import Dict, Any, Optional
 
