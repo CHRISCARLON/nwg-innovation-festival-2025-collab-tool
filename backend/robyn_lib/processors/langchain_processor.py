@@ -19,24 +19,12 @@ class StreetAnalysis(BaseModel):
 
 class LandUseAnalysis(BaseModel):
     """Structured output for land use analysis"""
-    location: List[str] = Field(
-        description="Name and location details of the area, including any major landmarks"
-    )
-    institutional_properties: List[str] = Field(
-        description="Educational, religious, and public institutions including universities, schools, churches, cathedrals"
-    )
-    residential_properties: List[str] = Field(
-        description="All types of residential buildings including private homes, student accommodation, communal living"
-    )
-    commercial_properties: List[str] = Field(
-        description="Commercial and business properties in the area"
-    )
-    recent_changes: List[str] = Field(
-        description="Recent modifications, updates, and changes to properties in the area"
-    )
-    summary: str = Field(
-        description="Comprehensive overview synthesizing all key findings about the area"
-    )
+    location: List[str] = Field(description="Name and location details of the area, including any major landmarks nearby")
+    institutional_properties: List[str] = Field(description="Educational, religious, and public institutions including universities, schools, churches, cathedrals")
+    residential_properties: List[str] = Field(description="All types of residential buildings including private homes, student accommodation, communal living")
+    commercial_properties: List[str] = Field(description="Commercial and business properties in the area")
+    recent_changes: List[str] = Field(description="Recent modifications, updates, and changes to properties in the area")
+    summary: str = Field(description="Comprehensive overview synthesizing all key findings about the area")
 
 async def process_with_langchain(data: Dict[str, Any], route_type: str) -> Dict[str, Any]:
     """
@@ -58,6 +46,8 @@ async def process_with_langchain(data: Dict[str, Any], route_type: str) -> Dict[
     # Convert api_key to SecretStr using pydantic
     secret_api_key = SecretStr(api_key)
 
+    # Set model type
+    # TODO add other models?
     chat = ChatOpenAI(
         model="gpt-4o-mini",
         temperature=0.7,
@@ -82,22 +72,18 @@ async def process_with_langchain(data: Dict[str, Any], route_type: str) -> Dict[
         template = """You are an expert urban planning analyst.
         Analyze the following land use data:
         {context}
-        Provide a structured analysis following this format:
+        
+        Provide a detailed analysis with the following structure, ensuring to provide only the data without any schema information:
+        - location: List the village or city name and location details, including nearby landmarks if any
+        - institutional_properties: List all educational, religious, and public institutions
+        - residential_properties: List all types of residential buildings
+        - commercial_properties: List all commercial and business properties
+        - recent_changes: List recent modifications and updates
+        - summary: Provide a comprehensive overview
+        
         {format_instructions}
-        Follow these specific guidelines:
-        1. Begin with precise location identification and major landmarks
-        2. List names of institutional properties including:
-        - Universities and colleges
-        - Religious buildings
-        - Public institutions
-        3. Detail names of residential properties including:
-        - Private residences
-        - Student accommodation
-        - Communal living spaces
-        4. Document names of commercial properties as well. 
-        5. Note recent changes and modifications to properties
-        6. Provide a comprehensive summary
-        Format your response according to the schema exactly as specified."""
+        
+        Important: Provide the data directly without including any schema or property descriptions."""
 
     # Create prompt template
     prompt = ChatPromptTemplate.from_template(template)
@@ -122,6 +108,5 @@ async def process_with_langchain(data: Dict[str, Any], route_type: str) -> Dict[
         }
     except Exception as e:
         return {
-            "error": f"Langchain processing failed: {str(e)}",
-            "raw_data": data
+            "error": f"Langchain processing failed: {str(e)}"
         }

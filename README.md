@@ -18,7 +18,7 @@ It consists of a Python backend using Robyn framework and a frontend built with 
   - Traffic sensitivity
   - Street Impact Score
   - Street Manager Aggregated Stats
-- Uses GPT-4 to generate human-readable analysis of the technical data
+- Uses chat gpt-4o mini to generate human-readable analysis of the technical data
 
 ### 2. Land Use Analysis
 
@@ -28,7 +28,7 @@ It consists of a Python backend using Robyn framework and a frontend built with 
   - Land use categories
   - Total area statistics
   - Building characteristics
-- Uses GPT-4 to generate human-readable analysis of the technical data
+- Uses chat gpt-4o mini to generate human-readable analysis of the technical data
 
 ## Technical Architecture
 
@@ -39,11 +39,11 @@ TBC - currently just a basic frontend to test the backend and is out of date.
 ### Backend (Robyn)
 
 - RESTful API endpoints:
-  - `/street-info`: Street network and RAMI data
-  - `/land-use-info`: Land use and building information
+  - `/street-info` and `/street-info-llm`: Street network and RAMI data
+  - `/land-use-info` and `/land-use-info-llm`: Land use and building information
 - Asynchronous processing of multiple OS NGD API calls
 - Intelligent data filtering and data aggregation
-- Integration with OpenAI's GPT-4 for data interpretation
+- Integration with OpenAI's chat gpt-4o mini for data interpretation
 
 ### Key Dependencies
 
