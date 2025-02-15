@@ -4,6 +4,7 @@ from robyn_lib.routes.route_handler import FeatureRouteHandler
 from datetime import datetime
 from robyn_lib.services.services import OSFeatureService, BBOXGeometryService, LangChainSummaryService
 
+# TODO improve error handling
 
 # DEFINE APP AND LOGGER
 app = Robyn(__file__)
@@ -31,10 +32,8 @@ async def log_response(response: Response):
     if response.status_code >= 400:  # Log full details for errors
         log_level = get_log_level_for_status(response.status_code)
         
-        try:
-            error_detail = response.description if hasattr(response, 'description') else ''
-        except:
-            error_detail = 'No error details available'
+
+        error_detail = response.description if hasattr(response, 'description') else ''
 
         log_message = f"Response: status={response.status_code}, type={response.response_type}, details={error_detail}"
 

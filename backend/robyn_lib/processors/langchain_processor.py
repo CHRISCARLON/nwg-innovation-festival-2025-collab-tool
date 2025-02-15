@@ -115,7 +115,7 @@ async def process_with_langchain(data: Dict[str, Any], route_type: str) -> Dict[
         
         # Parse the response content to be returned
         parsed_response = parser.parse(response_content)
-        logger.success(f"Langchain Parse Successul")
+        logger.success("Langchain Parse Successul")
 
         return {
             "llm_summary": parsed_response.model_dump(),

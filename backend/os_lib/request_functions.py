@@ -2,7 +2,6 @@ import requests
 import os
 import aiohttp
 
-
 def fetch_data(endpoint: str) -> dict:
     """" 
     Synchronous function to fetch data from endpoint
@@ -19,8 +18,8 @@ def fetch_data(endpoint: str) -> dict:
         response.raise_for_status()
         result = response.json()
         return result
-    except Exception:
-        raise
+    except requests.exceptions.RequestException as e:
+        raise e
 
 async def fetch_data_auth(endpoint: str) -> dict:
     """" 
@@ -43,5 +42,7 @@ async def fetch_data_auth(endpoint: str) -> dict:
                 response.raise_for_status()
                 result = await response.json()
                 return result
-    except Exception:
-        raise
+    except aiohttp.ClientError as e:
+        raise e
+    except Exception as e:
+        raise e
