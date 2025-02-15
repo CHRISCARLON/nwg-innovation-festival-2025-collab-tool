@@ -6,8 +6,6 @@ Rapid Street Assessment (RSAs) are designed to provide quick, comprehensive anal
 
 It consists of a Python backend using Robyn framework and a frontend built with Taipy GUI.
 
-![Screenshot 2025-02-14 at 13 37 07](https://github.com/user-attachments/assets/7d05f8f4-cb00-490d-ab88-926bec951c69)
-
 ## Core Features
 
 ### 1. Street Information Analysis
