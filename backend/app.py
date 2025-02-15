@@ -32,7 +32,6 @@ async def log_response(response: Response):
     if response.status_code >= 400:  # Log full details for errors
         log_level = get_log_level_for_status(response.status_code)
         
-
         error_detail = response.description if hasattr(response, 'description') else ''
 
         log_message = f"Response: status={response.status_code}, type={response.response_type}, details={error_detail}"
