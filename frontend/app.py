@@ -8,14 +8,14 @@ from collections import Counter
 collection_id = ""
 usrn = ""
 response_data = "No data fetched yet"
-cleaned_data = "No data fetched yet"
+formatted_data = "No data fetched yet"
 api_base_url = "http://localhost:8080"
 
 def initialize_state(state):
     state.collection_id = collection_id
     state.usrn = usrn
     state.response_data = response_data
-    state.cleaned_data = cleaned_data
+    state.formatted_data = formatted_data
 
 def format_response(data):
     # Try to parse string data into JSON if needed
@@ -36,18 +36,7 @@ def format_response(data):
     descriptions = Counter(f['properties']['description'] for f in features)
     total_area = sum(f['properties']['geometry_area'] for f in features)
     
-    # Build summary section
-    property_details = [
-        [
-            f"### {i+1}. {feature['properties'].get('name1_text', 'Unnamed')}",
-            f"- Type: {feature['properties'].get('description', 'N/A')}",
-            f"- Land Use: {feature['properties'].get('oslandusetiera', 'N/A')}",
-            f"- Area: {feature['properties'].get('geometry_area', 0):.2f} sq meters",
-            f"- UPRN: {feature['properties'].get('primaryuprn', 'N/A')}",
-            "\n"
-        ] for i, feature in enumerate(features)
-    ]
-    
+
     # Construct the summary
     summary_sections = [
         "#### Summary",
@@ -67,7 +56,7 @@ def format_response(data):
 def clear_response(state):
     """Helper function to clear response data"""
     state.response_data = "Loading..."
-    state.cleaned_data = "Loading..."
+    state.formatted_data = "Loading..."
 
 def fetch_rami(state):
     try:
@@ -84,11 +73,11 @@ def fetch_rami(state):
         response = requests.get(f"{api_base_url}/rami", params=params)
         response.raise_for_status()
         state.response_data = json.dumps(response.json(), indent=2)
-        state.cleaned_data = state.response_data  # For RAMI, we show the raw JSON
+        state.formatted_data = state.response_data  # For RAMI, we show the raw JSON
         print(f"Response received: {state.response_data}")
     except Exception as e:
         state.response_data = f"Error: {str(e)}"
-        state.cleaned_data = state.response_data
+        state.formatted_data = state.response_data
         print(f"Error occurred: {str(e)}")
 
 def fetch_land_use(state):
@@ -106,11 +95,11 @@ def fetch_land_use(state):
         response = requests.get(f"{api_base_url}/land-use", params=params)
         response.raise_for_status()
         state.response_data = json.dumps(response.json(), indent=2)
-        state.cleaned_data = format_response(state.response_data)
-        print(f"Response received: {state.cleaned_data}")
+        state.formatted_data = format_response(state.response_data)
+        print(f"Response received: {state.formatted_data}")
     except Exception as e:
         state.response_data = f"Error: {str(e)}"
-        state.cleaned_data = state.response_data
+        state.formatted_data = state.response_data
         print(f"Error occurred: {str(e)}")
 
 # Build the page
@@ -156,7 +145,7 @@ with tgb.Page() as page:
                 
                 # Response content
                 with tgb.part(class_name="p-4"):
-                    tgb.text("{cleaned_data}", 
+                    tgb.text("{formatted_data}", 
                             mode="md", 
                             class_name="font-mono text-sm whitespace-pre-wrap bg-gray-50 p-4 rounded-md overflow-auto max-h-[70vh]")
 

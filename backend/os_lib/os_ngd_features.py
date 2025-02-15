@@ -1,10 +1,9 @@
 from typing import List
 from enum import Enum
 
-# Define the NGDFeaturesAPI
-# This is used to map the collection_id to the correct dataset
-# It also contains a method to return all the collections in a list
-class NGDFeaturesAPI(Enum):
+# Define the OS NGD Themes and Collections
+# This is used to map the collections to their feature types and parent themes
+class OSNGDCollections(Enum):
     def __init__(self, *args):
         self._value_ = args
 
@@ -110,3 +109,38 @@ class NGDFeaturesAPI(Enum):
     @classmethod
     def all_datasets(cls) -> List[str]:
         return [dataset for member in cls for dataset in member.value]
+
+class OSNGDThemes(Enum):
+    def __init__(self, *args):
+        self._value_ = args
+
+    def __iter__(self):
+        return iter(self.value)
+
+    def as_list(self) -> List[str]:
+        return list(self.value)
+
+    BUILDINGS = (OSNGDCollections.BLD,)
+    GEOGRAPHICAL_NAMES = (OSNGDCollections.GNM,)
+    LAND = (OSNGDCollections.LND,)
+    LAND_USE = (OSNGDCollections.LUS,)
+    STRUCTURES = (OSNGDCollections.STR,)
+    TRANSPORT = (OSNGDCollections.TRN, OSNGDCollections.NTWK, OSNGDCollections.RAMI)
+    WATER = (OSNGDCollections.WTR, OSNGDCollections.NTWK_WATER)
+
+    @classmethod
+    def all_themes(cls) -> List[str]:
+        return [member.name for member in cls]
+
+    @classmethod
+    def get_collections_for_theme(cls, theme_name: str) -> List[OSNGDCollections]:
+        try:
+            theme = cls[theme_name]
+            return list(theme.value)
+        except KeyError:
+            return []
+
+    @classmethod
+    def get_datasets_for_theme(cls, theme_name: str) -> List[str]:
+        collections = cls.get_collections_for_theme(theme_name)
+        return [dataset for collection in collections for dataset in collection.value]

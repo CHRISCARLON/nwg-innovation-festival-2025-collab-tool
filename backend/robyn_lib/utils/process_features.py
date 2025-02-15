@@ -1,15 +1,13 @@
-from robyn_lib.utils.utils import get_bbox_from_usrn
 from os_lib.os_data_object import OSDataObject
-from os_lib.os_ngd_features import NGDFeaturesAPI
+from os_lib.os_ngd_features import OSNGDCollections
 from typing import Dict, Any, Optional
 
-def process_features(
+async def process_features(
     collection_id: str,
     usrn: Optional[str] = None,
     bbox: Optional[str] = None,
     bbox_crs: Optional[str] = None,
-    crs: Optional[str] = None,
-    buffer_distance: float = 50
+    crs: Optional[str] = None
 ) -> Dict[str, Any]:
     """Get features from the OS data object with support for both RAMI and LUS collections"""
     if not collection_id:
@@ -19,33 +17,24 @@ def process_features(
     os_data = OSDataObject()
 
     match collection_id:
-        # For RAMI collections that require USRN
-        case _ if collection_id in NGDFeaturesAPI.RAMI.value:
+        # For RAMI and NTWK collections that require USRN
+        # Street info route
+        case _ if collection_id in (OSNGDCollections.RAMI.value + OSNGDCollections.NTWK.value):
             if not usrn:
-                raise ValueError("A valid usrn is required for the RAMI collections")
-            return os_data.get_collection_features(
+                raise ValueError("A valid usrn is required for the RAMI and NTWK collections")
+            return await os_data.get_collection_features(
                 collection_id=collection_id,
                 usrn_attr="usrn",
                 usrn_attr_value=usrn
             )
-
-        # For LUS collections that support both USRN-derived bbox and direct bbox
-        case _ if collection_id in NGDFeaturesAPI.LUS.value:
-            # If USRN is provided, generate a bbox from it
-            if usrn:
-                try:
-                    minx, miny, maxx, maxy = get_bbox_from_usrn(usrn, buffer_distance)
-                    bbox = f"{minx},{miny},{maxx},{maxy}"
-                    bbox_crs = "http://www.opengis.net/def/crs/EPSG/0/27700"
-                    crs = "http://www.opengis.net/def/crs/EPSG/0/27700"
-                except Exception as e:
-                    raise ValueError(f"Failed to get bbox from USRN: {str(e)}")
-
-            # Verify bbox parameters
-            if not all([bbox, bbox_crs, crs]):
-                raise ValueError("A bbox, bbox-crs, and crs are required for the LUS collections")
-
-            return os_data.get_collection_features(
+        
+        # For LUS and BLD collections that require USRN
+        # Land use route
+        case _ if collection_id in (OSNGDCollections.LUS.value + OSNGDCollections.BLD.value):
+            if not usrn:
+                raise ValueError("A valid usrn is required for the LUS and BLD collections")
+            
+            return await os_data.get_collection_features(
                 collection_id=collection_id,
                 bbox=bbox,
                 bbox_crs=bbox_crs,

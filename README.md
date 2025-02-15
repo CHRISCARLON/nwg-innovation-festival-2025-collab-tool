@@ -1,56 +1,66 @@
-# Rapid Street Assessments (RSAs)
+# Rapid Street Assessment Tool
 
 ## Overview
 
-Rapid Street Assessments (RSAs) are designed to quickly retrieve comprehensive information about streets and the surrounding area.
+Rapid Street Assessment (RSAs) are designed to provide quick, comprehensive analysis of street and land use data - using USRNs (Unique Street Reference Numbers).
 
-Example flow for Land Use Query:
+It consists of a Python backend using Robyn framework and a frontend built with Taipy GUI.
 
 ![Screenshot 2025-02-14 at 13 37 07](https://github.com/user-attachments/assets/7d05f8f4-cb00-490d-ab88-926bec951c69)
 
-### 1. Routing and Asset Management Information (RAMI) Query
+## Core Features
 
-```bash
-curl "http://localhost:8080/rami?collection_id=trn-rami-specialdesignationline-1&usrn=8100239"
-```
+### 1. Street Information Analysis
 
-- **Purpose**: Retrieve Routing and Asset Management Information about a specific street - e.g. engineering difficulties/traffic sensitivity.
-- **Parameters**:
-  - `collection_id`: Identifies the special designation line collection within the RAMI data
-  - `usrn`: Unique Street Reference Number - used as a direct filter
+- Fetches and analyses street network data and special designations
+- Provides detailed information about:
+  - Street characteristics
+  - Special designations and restrictions
+  - Engineering difficulties
+  - Traffic sensitivity
+  - Street Impact Score
+  - Street Manager Aggregated Stats
+- Uses GPT-4 to generate human-readable analysis of the technical data
 
-### 2. Land Use Query
+### 2. Land Use Analysis
 
-```bash
-curl "http://localhost:8080/land-use?collection_id=lus-fts-site-1&usrn=11720125"
-```
+- Retrieves and processes land use and building data
+- Provides insights about:
+  - Property types and distributions
+  - Land use categories
+  - Total area statistics
+  - Building characteristics
+- Uses GPT-4 to generate human-readable analysis of the technical data
 
-- **Purpose**: Retrieve land use information for a specific geographic area - e.g. land for commercial and residential purposes, etc.
-- **Parameters**:
-  - `collection_id`: Identifies the land use collection within the land use data
-  - `usrn`: Unique Street Reference Number - used to calculate bbox
+## Technical Architecture
 
-## Key Benefits
+### Frontend (Taipy GUI)
 
-- **Fast Retrieval**: Quickly access detailed street and land use information
-- **Precise Targeting**: All you need is a USRN
-- **Multiple Data Sources**: Access different collections (rami and land use)
+TBC - currently just a basic frontend to test the backend and is out of date.
 
-## Typical Use Cases
+### Backend (Robyn)
 
-- Urban planning
-- Infrastructure assessment
-- Land use analysis
-- Rapid geographic information retrieval
+- RESTful API endpoints:
+  - `/street-info`: Street network and RAMI data
+  - `/land-use-info`: Land use and building information
+- Asynchronous processing of multiple OS NGD API calls
+- Intelligent data filtering and data aggregation
+- Integration with OpenAI's GPT-4 for data interpretation
 
-## Coordinate System Note
+### Key Dependencies
 
-The bbox, bbox_crs, and crs query parametres use the British National Grid (EPSG:27700) coordinate system.
+- Python ≥3.11
+- Robyn (API framework)
+- Taipy (GUI framework)
+- LangChain (AI processing)
+- MotherDuck (data storage)
 
-## Frontend 
+## Data Sources
 
-Currently building a basic frontend for this too - bit crap at the moment but will look better when done!
-
-![Screenshot 2025-02-14 at 23 22 13](https://github.com/user-attachments/assets/74a9b63f-c64c-4b77-8e82-8f611146c243)
-
-
+- Ordnance Survey National Geographic Database (NGD)
+- Supports multiple OS data collections:
+  - RAMI (Routing and Asset Management Information)
+  - Network data
+  - Land use data
+- Street Manager data from MotherDuck
+- Street Impact scores from MotherDuck (created monthly by myself)

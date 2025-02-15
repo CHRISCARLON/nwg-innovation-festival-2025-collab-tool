@@ -1,8 +1,19 @@
 import requests
 import os
+import aiohttp
+
 
 def fetch_data(endpoint: str) -> dict:
-    """" TBC """
+    """" 
+    Synchronous function to fetch data from endpoint
+    
+    Args:
+        endpoint: str - The endpoint to fetch data from
+    Returns:
+        dict - The data from the endpoint
+    Raises:
+        Exception - If the request fails
+    """
     try:
         response = requests.get(endpoint)
         response.raise_for_status()
@@ -11,16 +22,26 @@ def fetch_data(endpoint: str) -> dict:
     except Exception:
         raise
 
-def fetch_data_auth(endpoint: str) -> dict:
-    """" Fetches data from endpoint using OS API key from environment variables """
+async def fetch_data_auth(endpoint: str) -> dict:
+    """" 
+    Asynchronous function to fetch data from endpoint using OS API key from environment variables 
+    
+    Args:
+        endpoint: str - The endpoint to fetch data from
+    Returns:
+        dict - The data from the endpoint
+    Raises:
+        Exception - If the request fails
+    """
     try:
         headers = {
             'key': os.environ['OS_KEY'],
             'Content-Type': 'application/json'
         }
-        response = requests.get(endpoint, headers=headers)
-        response.raise_for_status()
-        result = response.json()
-        return result
+        async with aiohttp.ClientSession() as session:
+            async with session.get(endpoint, headers=headers) as response:
+                response.raise_for_status()
+                result = await response.json()
+                return result
     except Exception:
         raise

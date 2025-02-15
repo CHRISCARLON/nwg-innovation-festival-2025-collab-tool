@@ -5,64 +5,69 @@ from loguru import logger
 from robyn import Response
 from robyn.robyn import QueryParams
 from robyn_lib.utils.process_features import process_features
-from robyn_lib.utils.utils import get_bbox_from_usrn
+from typing import List, Dict, Any, Optional
+from robyn_lib.langchain_processor.processor import process_with_langchain
 
-async def get_land_use_route(query_params: QueryParams) -> Response:
-    """API route to get features data from both building and land use collections"""
+async def get_street_info_route(query_params: QueryParams) -> Response:
+    """
+    API route to get features data with support for RAMI collection.
     
-    # Define the collection IDs for the land use route
+    Args:
+        query_params (QueryParams): Query parameters containing USRN
+        
+    Returns:
+        Response: HTTP response containing feature collection data
+        
+    Raises:
+        ValueError: If USRN parameter is missing or invalid
+        requests.exceptions.HTTPError: If upstream API request fails
+        Exception: For other unexpected errors
+    """
+    # Define the collection IDs for the street info route
     COLLECTION_IDS = [
-        "bld-fts-building-1", 
-        "lus-fts-site-1",     
+        "trn-ntwk-street-1",
+        "trn-rami-specialdesignationarea-1",
+        "trn-rami-specialdesignationline-1",
+        "trn-rami-specialdesignationpoint-1"
     ]
 
     try:
-        # Get USRN from query params
         usrn = query_params.get('usrn')
         if not usrn:
             raise ValueError("Missing required parameter: usrn")
 
-        # Calculate bbox once from USRN
-        minx, miny, maxx, maxy = await get_bbox_from_usrn(usrn)
-        bbox = f"{minx},{miny},{maxx},{maxy}"
-        bbox_crs = "http://www.opengis.net/def/crs/EPSG/0/27700"
-        crs = "http://www.opengis.net/def/crs/EPSG/0/27700"
-
-        # Create coroutines for concurrent execution using the same bbox
+        # Create coroutines for concurrent execution
         feature_coroutines = [
-            process_features(
-                collection_id=collection_id,
-                usrn=usrn,
-                bbox=bbox,
-                bbox_crs=bbox_crs,
-                crs=crs,
-            )
+            process_features(collection_id=collection_id, usrn=usrn)
             for collection_id in COLLECTION_IDS
         ]
-
+        
         # Gather and await all coroutines
         feature_results = await asyncio.gather(*feature_coroutines, return_exceptions=True)
-
-        all_features = []
-        latest_timestamp = None
+        
+        all_features: List[Dict[str, Any]] = []
+        latest_timestamp: Optional[str] = None
 
         # Process results and handle any individual collection failures
         for collection_id, result in zip(COLLECTION_IDS, feature_results):
             if isinstance(result, Exception):
                 logger.error(f"Failed to fetch {collection_id}: {str(result)}")
                 continue
-
+                
             if not isinstance(result, dict) or 'features' not in result:
                 logger.error(f"Invalid response format from {collection_id}")
                 continue
 
             # Remove filtering and directly add features
             all_features.extend(result['features'])
-
+            
             # Keep track of the latest timestamp
             if result.get('timeStamp'):
                 if latest_timestamp is None or result['timeStamp'] > latest_timestamp:
                     latest_timestamp = result['timeStamp']
+
+        if not all_features:
+            logger.warning(f"No features found for USRN: {usrn}")
 
         filtered_response = {
             'type': 'FeatureCollection',
@@ -71,10 +76,16 @@ async def get_land_use_route(query_params: QueryParams) -> Response:
             'features': all_features
         }
 
+        # Process the features with LangChain
+        analysis_result = await process_with_langchain(
+            data=filtered_response,
+            route_type="street_info" 
+        )
+
         return Response(
             status_code=200,
             headers={"Content-Type": "application/json"},
-            description=json.dumps(filtered_response),
+            description=json.dumps(analysis_result),
         )
 
     except requests.exceptions.HTTPError as http_err:

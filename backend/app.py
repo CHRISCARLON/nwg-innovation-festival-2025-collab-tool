@@ -1,9 +1,7 @@
 from robyn import Robyn, Request, Response
 from robyn.logger import Logger
-from robyn_lib.ngd_features import get_collections
+from robyn_lib.ngd_features import get_street_info, get_land_use
 from datetime import datetime
-
-from robyn_lib.ngd_features import get_rami, get_land_use
 
 # DEFINE APP AND LOGGER
 app = Robyn(__file__)
@@ -43,9 +41,8 @@ async def log_response(response: Response):
     return response
 
 # DEFINE ROUTES
-app.get("/rami")(get_rami.get_rami_route)
-app.get("/land-use")(get_land_use.get_land_use_route)
-app.get("/collections")(get_collections.get_all_collections_route)
+app.get("/street-info")(get_street_info.get_street_info_route)
+app.get("/land-use-info")(get_land_use.get_land_use_route)
 
 if __name__ == "__main__":
     app.start(port=8080)

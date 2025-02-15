@@ -1,12 +1,9 @@
 import os
-
 from typing import Optional, Literal, Dict, Any
 from urllib.parse import urlencode
 from operator import itemgetter
-
-from .os_endpoints import NGDFeaturesAPIEndpoint
+from .os_endpoints import NGDAPIEndpoint
 from .request_functions import fetch_data, fetch_data_auth
-
 
 class OSDataObject:
     def __init__(self) -> None:
@@ -16,48 +13,47 @@ class OSDataObject:
             raise ValueError("An API key must be provided through the environment variable 'OS_KEY'")
 
     def get_all_collections(self) -> list[Any]:
-        """ Get all available collections """
-        endpoint: str = NGDFeaturesAPIEndpoint.COLLECTIONS.value
+        """ Get info on all available collections """
+        endpoint: str = NGDAPIEndpoint.COLLECTIONS.value
         try:
             result = fetch_data(endpoint)
             output = list(map(itemgetter('title', 'id'), result['collections']))
             return output
-        except Exception:
-            raise
+        except Exception as e:
+            raise e
 
     def get_collection(self, collection_id: str) -> dict[Any, Any]:
-        """ Get a single collection """
-        endpoint: str = NGDFeaturesAPIEndpoint.COLLECTION_INFO.value.format(collection_id)
+        """ Get info on a single collection """
+        endpoint: str = NGDAPIEndpoint.COLLECTION_INFO.value.format(collection_id)
         try:
             result = fetch_data(endpoint)
             return result
-        except Exception:
-            raise
+        except Exception as e:
+            raise e
 
     def get_collection_schema(self, collection_id: str) -> dict[Any, Any]:
         """ Get the schema of a single collection """
-        endpoint: str = NGDFeaturesAPIEndpoint.COLLECTION_SCHEMA.value.format(collection_id)
+        endpoint: str = NGDAPIEndpoint.COLLECTION_SCHEMA.value.format(collection_id)
         try:
             result = fetch_data(endpoint)
             return result
-        except Exception:
-            raise
+        except Exception as e:
+            raise e
 
     def get_collection_queryables(self, collection_id: str) -> dict[Any, Any]:
         """ 
         Get the queryables of a single collection 
         
-        This will tell you what you can filter by - e.g. USRN, OSID, TOID, etc
-        
+        This will tell you what you can filter by (the possible query parameters) - e.g. USRN, OSID, TOID, etc
         """
-        endpoint: str = NGDFeaturesAPIEndpoint.COLLECTION_QUERYABLES.value.format(collection_id)
+        endpoint: str = NGDAPIEndpoint.COLLECTION_QUERYABLES.value.format(collection_id)
         try:
             result = fetch_data(endpoint)
             return result
-        except Exception:
-            raise
+        except Exception as e:
+            raise e
 
-    def get_collection_features(
+    async def get_collection_features(
             self,
             collection_id: str,
             usrn_attr: Optional[Literal["usrn"]] = None,
@@ -78,7 +74,7 @@ class OSDataObject:
             Returns:
                 API response with collection features
             """
-            endpoint: str = NGDFeaturesAPIEndpoint.COLLECTION_FEATURES.value.format(collection_id)
+            endpoint: str = NGDAPIEndpoint.COLLECTION_FEATURES.value.format(collection_id)
 
             # Build query parameters
             query_params: Dict[str, Any] = {}
@@ -100,7 +96,7 @@ class OSDataObject:
                 endpoint = f"{endpoint}?{urlencode(query_params)}"
 
             try:
-                result = fetch_data_auth(endpoint)
+                result = await fetch_data_auth(endpoint)
                 return result
-            except Exception:
-                raise
+            except Exception as e:
+                raise e
