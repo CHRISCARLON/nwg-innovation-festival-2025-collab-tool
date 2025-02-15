@@ -4,8 +4,6 @@ from shapely.wkt import loads
 from loguru import logger
 import asyncio
 
-from os_lib.os_ngd_features import OSNGDCollections
-
 async def connect_to_motherduck() -> duckdb.DuckDBPyConnection:
     """Create a database connection object to MotherDuck"""
     database = os.getenv('MD_DB')
@@ -58,46 +56,9 @@ async def get_bbox_from_usrn(usrn: str, buffer_distance: float = 50) -> tuple:
         # Load in data and create buffer around the geometry of the USRN
         geom = loads(df['geometry'].iloc[0])
         buffered = geom.buffer(buffer_distance, cap_style="square", single_sided=False)
+        logger.success(f"Buffered geometry: {buffered}")
         return tuple(round(coord) for coord in buffered.bounds)
 
     except duckdb.Error as e:
         logger.error(f"Error getting bbox from USRN: {e}")
         raise
-
-def filter_feature_properties(feature: dict, collection_id: str) -> dict:
-    """Extract key information from a feature based on collection type"""
-
-    # Base properties that exist in both schemas
-    essential_props = {
-        'id': feature['id'],
-        'properties': {
-            'description': feature['properties'].get('description'),
-        }
-    }
-
-    # For RAMI Special Designation collections
-    if collection_id in OSNGDCollections.RAMI.value:
-        essential_props['properties'].update({
-            'usrn': feature['properties'].get('usrn'),
-            'designation': feature['properties'].get('designation'),
-            'designationdescription': feature['properties'].get('designationdescription'),
-            'effectivestartdate': feature['properties'].get('effectivestartdate'),
-            'effectiveenddate': feature['properties'].get('effectiveenddate'),
-            'timeinterval': feature['properties'].get('timeinterval'),
-            'geometry_length': feature['properties'].get('geometry_length'),
-            'authorityid': feature['properties'].get('authorityid'),
-            'contactauthority_authorityname': feature['properties'].get('contactauthority_authorityname')
-        })
-
-    # For LUS collections
-    elif collection_id in OSNGDCollections.LUS.value:
-        essential_props['properties'].update({
-            'name1_text': feature['properties'].get('name1_text'),
-            'name2_text': feature['properties'].get('name2_text'),
-            'oslandusetiera': feature['properties'].get('oslandusetiera'),
-            'oslandusetierb': feature['properties'].get('oslandusetierb', []),
-            'primaryuprn': feature['properties'].get('primaryuprn'),
-            'geometry_area': feature['properties'].get('geometry_area')
-        })
-
-    return essential_props
