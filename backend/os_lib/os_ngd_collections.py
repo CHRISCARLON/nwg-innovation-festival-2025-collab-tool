@@ -4,6 +4,9 @@ from enum import Enum
 # Define the OS NGD Themes and Collections
 # This is used to map the collections to their feature types and parent themes
 class OSNGDCollections(Enum):
+    """
+    Enum for the OS NGD Collections - each collection belongs to a theme
+    """
     def __init__(self, *args):
         self._value_ = args
 
@@ -111,6 +114,9 @@ class OSNGDCollections(Enum):
         return [dataset for member in cls for dataset in member.value]
 
 class OSNGDThemes(Enum):
+    """
+    Enum for the OS NGD Themes
+    """
     def __init__(self, *args):
         self._value_ = args
 

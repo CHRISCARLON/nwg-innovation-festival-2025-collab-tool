@@ -6,10 +6,10 @@ from ..routes.route_handler import RouteType
 
 async def process_features(
     path_type: str,
-    usrn: Optional[str] = None,
-    bbox: Optional[str] = None,
-    bbox_crs: Optional[str] = None,
-    crs: Optional[str] = None
+    usrn: str,
+    bbox: str,
+    bbox_crs: str,
+    crs: str
 ) -> Dict[str, Any]:
     """
     Process features based on path type with support for both street info and land use routes
@@ -32,6 +32,7 @@ async def process_features(
         if not usrn:
             raise ValueError("A valid usrn is required")
         
+        # Define route type as this is use to determine the collections to query
         route_type = RouteType(path_type)
 
         # Create OS data object
@@ -109,10 +110,10 @@ async def process_features(
                 
                 filtered_features.append(feature_copy)
 
+            # Remove geometry from each feature - as this creates too many tokens when using the llm service
             logger.success("Geometries Removed")
             all_features.extend(filtered_features)
 
-            
             # Track latest timestamp
             if result.get('timeStamp'):
                 if latest_timestamp is None or result['timeStamp'] > latest_timestamp:

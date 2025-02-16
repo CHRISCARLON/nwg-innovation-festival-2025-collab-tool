@@ -14,11 +14,9 @@ async def connect_to_motherduck() -> duckdb.DuckDBPyConnection:
 
     connection_string = f'md:{database}?motherduck_token={token}&access_mode=read_only'
     try:
-        # Create a thread-safe cursor for the connection
         con = await asyncio.to_thread(duckdb.connect, connection_string)
-        cursor = con.cursor()
         logger.success("MotherDuck connection successful")
-        return cursor
+        return con
     except duckdb.Error as e:
         logger.warning(f"MotherDuck connection error: {e}")
         raise
@@ -32,11 +30,11 @@ async def get_bbox_from_usrn(usrn: str, buffer_distance: float = 50) -> tuple:
     Returns:
         tuple: (minx, miny, maxx, maxy) coordinates
     """
-    try:
-        con = await connect_to_motherduck()
-        schema = os.getenv('SCHEMA')
-        table_name = os.getenv('TABLE')
+    con = await connect_to_motherduck()
+    schema = os.getenv('USRN_SCHEMA')
+    table_name = os.getenv('USRN_TABLE')
 
+    try:
         query = f"""
         SELECT geometry
         FROM {schema}.{table_name}
@@ -45,7 +43,6 @@ async def get_bbox_from_usrn(usrn: str, buffer_distance: float = 50) -> tuple:
 
         result = await asyncio.to_thread(con.execute, query, [usrn])
         df = result.fetchdf()
-        con.close()
         
         logger.success(f"USRN Geom Retrieval Successful: {df}")
 
@@ -59,6 +56,6 @@ async def get_bbox_from_usrn(usrn: str, buffer_distance: float = 50) -> tuple:
         logger.success(f"Buffered geometry: {buffered}")
         return tuple(round(coord) for coord in buffered.bounds)
 
-    except duckdb.Error as e:
-        logger.error(f"Error getting bbox from USRN: {e}")
-        raise
+    finally:
+        await asyncio.to_thread(con.close)
+        logger.success("MotherDuck connection closed")

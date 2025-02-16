@@ -2,7 +2,7 @@ from robyn import Robyn, Request, Response
 from robyn.logger import Logger
 from robyn_lib.routes.route_handler import FeatureRouteHandler
 from datetime import datetime
-from robyn_lib.services.services import OSFeatureService, BBOXGeometryService, LangChainSummaryService
+from robyn_lib.services.services import OSFeatureService, DataService, LangChainSummaryService
 
 # TODO improve error handling
 
@@ -48,13 +48,14 @@ async def log_response(response: Response):
 # DEFINE ROUTES
 # Initialize dependencies
 feature_service = OSFeatureService()
-geometry_service = BBOXGeometryService()
+data_service = DataService()
 llm_summary_service = LangChainSummaryService()
 
 # Create handler with dependencies
 route_handler = FeatureRouteHandler(
     feature_service=feature_service,
-    geometry_service=geometry_service,
+    geometry_service=data_service,
+    street_manager_service=data_service,
     llm_summary_service=llm_summary_service
 )
 

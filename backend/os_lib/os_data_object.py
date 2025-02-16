@@ -6,6 +6,9 @@ from .os_endpoints import NGDAPIEndpoint
 from .request_functions import fetch_data, fetch_data_auth
 
 class OSDataObject:
+    """
+    Returns an instance of the OSDataObject class which can be used to interact with the OS NGD API.
+    """
     def __init__(self) -> None:
         """Initialise with the API key"""
         self.api_key = os.getenv('OS_KEY')

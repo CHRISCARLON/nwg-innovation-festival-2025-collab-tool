@@ -1,7 +1,7 @@
 import json
 from enum import Enum
 from robyn import Response
-from ..interfaces.interfaces import OSFeatures, BBOXGeometry, LLMSummary
+from ..interfaces.interfaces import OSFeatures, BBOXGeometry, LLMSummary, StreetManagerStats
 from robyn.robyn import Request
 
 class RouteType(Enum):
@@ -12,11 +12,13 @@ class FeatureRouteHandler:
     def __init__(
         self,
         feature_service: OSFeatures,
-        geometry_service: BBOXGeometry, 
+        geometry_service: BBOXGeometry,
+        street_manager_service: StreetManagerStats,
         llm_summary_service: LLMSummary
     ):
         self.feature_service = feature_service
         self.geometry_service = geometry_service
+        self.street_manager_service = street_manager_service
         self.llm_summary_service = llm_summary_service
 
     async def get_street_info_route(self, request: Request) -> Response:
@@ -33,6 +35,9 @@ class FeatureRouteHandler:
             crs = "http://www.opengis.net/def/crs/EPSG/0/27700"
             bbox_crs = "http://www.opengis.net/def/crs/EPSG/0/27700"
 
+            # Get street manager stats
+            street_manager_stats = await self.street_manager_service.get_street_manager_stats(usrn)
+
             # Process features
             features = await self.feature_service.get_features(
                 path_type=path_type,
@@ -41,6 +46,8 @@ class FeatureRouteHandler:
                 bbox_crs=bbox_crs,
                 crs=crs
             )
+
+            features['street_manager_stats'] = street_manager_stats
 
             return Response(
                 status_code=200,
@@ -75,6 +82,9 @@ class FeatureRouteHandler:
             crs = "http://www.opengis.net/def/crs/EPSG/0/27700"
             bbox_crs = "http://www.opengis.net/def/crs/EPSG/0/27700"
 
+            # Get street manager stats
+            street_manager_stats = await self.street_manager_service.get_street_manager_stats(usrn)
+
             # Process features
             features = await self.feature_service.get_features(
                 path_type=path_type,
@@ -83,6 +93,8 @@ class FeatureRouteHandler:
                 bbox_crs=bbox_crs,
                 crs=crs
             )
+
+            features['street_manager_stats'] = street_manager_stats
 
             llm_summary = await self.llm_summary_service.summarize_results(features, path_type)
 

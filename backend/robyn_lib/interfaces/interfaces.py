@@ -22,3 +22,8 @@ class BBOXGeometry(ABC):
     @abstractmethod
     async def get_bbox_from_usrn(self, usrn: str, buffer_distance: float = 50) -> tuple:
         pass
+
+class StreetManagerStats(ABC):
+    @abstractmethod
+    async def get_street_manager_stats(self, usrn: str) -> dict:
+        pass

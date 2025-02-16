@@ -1,6 +1,11 @@
 from enum import Enum
 
 class NGDAPIEndpoint(Enum):
+    """
+    Enum for the OS NGD API Endpoints
+
+    Get information about the collections available and query available features
+    """
     BASE_PATH = "https://api.os.uk/features/ngd/ofa/v1/{}"
     COLLECTIONS = BASE_PATH.format("collections")
     COLLECTION_INFO = BASE_PATH.format("collections/{}")

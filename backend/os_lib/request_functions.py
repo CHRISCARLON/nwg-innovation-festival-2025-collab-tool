@@ -4,7 +4,7 @@ import aiohttp
 
 def fetch_data(endpoint: str) -> dict:
     """" 
-    Synchronous function to fetch data from endpoint
+    Synchronous function to fetch data from an endpoint
     
     Args:
         endpoint: str - The endpoint to fetch data from
@@ -23,7 +23,7 @@ def fetch_data(endpoint: str) -> dict:
 
 async def fetch_data_auth(endpoint: str) -> dict:
     """" 
-    Asynchronous function to fetch data from endpoint using OS API key from environment variables 
+    Asynchronous function to fetch data from an endpoint using OS API key from environment variables 
     
     Args:
         endpoint: str - The endpoint to fetch data from
