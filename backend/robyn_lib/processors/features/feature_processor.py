@@ -2,7 +2,7 @@ import asyncio
 from typing import Dict, Any, Optional, List
 from loguru import logger
 from os_lib.os_data_object import OSDataObject
-from ..routes.route_handler import RouteType
+from ...routes.route_handler import RouteType
 
 async def process_features(
     path_type: str,
@@ -58,10 +58,11 @@ async def process_features(
                     for collection_id in collection_ids
                 ]
 
+            # TODO: Add building collection back in the future
             case RouteType.LAND_USE:
                 logger.info(f"Processing land use for USRN: {usrn}")
                 collection_ids = [
-                    "bld-fts-building-1",
+                    # "bld-fts-building-1",
                     "lus-fts-site-1"
                 ]
                 if not bbox:

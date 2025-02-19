@@ -12,7 +12,6 @@ formatted_data = "No data fetched yet"
 api_base_url = "http://localhost:8080"
 
 def initialize_state(state):
-    state.collection_id = collection_id
     state.usrn = usrn
     state.response_data = response_data
     state.formatted_data = formatted_data
@@ -58,7 +57,7 @@ def clear_response(state):
     state.response_data = "Loading..."
     state.formatted_data = "Loading..."
 
-def fetch_rami(state):
+def fetch_street_llm(state):
     try:
         # Clear existing response first
         clear_response(state)
@@ -66,21 +65,20 @@ def fetch_rami(state):
         clean_collection_id = state.collection_id.replace("collection_id=", "").replace("%3D", "=")
         
         params = {
-            "collection_id": clean_collection_id,
             "usrn": state.usrn
         }
-        print(f"Fetching RAMI with params: {params}")
-        response = requests.get(f"{api_base_url}/rami", params=params)
+        print(f"Fetching Street Info with params: {params}")
+        response = requests.get(f"{api_base_url}/street-info-llm", params=params)
         response.raise_for_status()
         state.response_data = json.dumps(response.json(), indent=2)
-        state.formatted_data = state.response_data  # For RAMI, we show the raw JSON
+        state.formatted_data = state.response_data 
         print(f"Response received: {state.response_data}")
     except Exception as e:
         state.response_data = f"Error: {str(e)}"
         state.formatted_data = state.response_data
         print(f"Error occurred: {str(e)}")
 
-def fetch_land_use(state):
+def fetch_land_use_llm(state):
     try:
         # Clear existing response first
         clear_response(state)
@@ -88,11 +86,10 @@ def fetch_land_use(state):
         clean_collection_id = state.collection_id.replace("collection_id=", "").replace("%3D", "=")
         
         params = {
-            "collection_id": clean_collection_id,
             "usrn": state.usrn
         }
-        print(f"Fetching Land Use with params: {params}")
-        response = requests.get(f"{api_base_url}/land-use", params=params)
+        print(f"Fetching Land Use Info with params: {params}")
+        response = requests.get(f"{api_base_url}/land-use-info-llm", params=params)
         response.raise_for_status()
         state.response_data = json.dumps(response.json(), indent=2)
         state.formatted_data = format_response(state.response_data)
@@ -131,10 +128,10 @@ with tgb.Page() as page:
                 # Buttons
                 with tgb.part(class_name="space-y-3"):
                     tgb.button("📊 Fetch RAMI Data", 
-                            on_action=fetch_rami, 
+                            on_action=fetch_street_llm, 
                             class_name="w-full p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700")
                     tgb.button("🏢 Fetch Land Use Data", 
-                            on_action=fetch_land_use, 
+                            on_action=fetch_land_use_llm, 
                             class_name="w-full p-2 bg-green-600 text-white rounded-md hover:bg-green-700")
 
             # Right column - Response

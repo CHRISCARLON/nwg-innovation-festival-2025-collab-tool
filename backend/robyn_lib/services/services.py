@@ -1,8 +1,9 @@
 from ..interfaces.interfaces import OSFeatures, BBOXGeometry, LLMSummary, StreetManagerStats
-from ..processors.bbox_processor import get_bbox_from_usrn
-from ..processors.feature_processor import process_features
-from ..processors.langchain_processor import process_with_langchain
-from ..processors.street_manager_processor import get_street_manager_stats
+from ..processors.bbox.bbox_processor import get_bbox_from_usrn
+from ..processors.features.feature_processor import process_features
+from ..processors.langchain.langchain_processor import process_with_langchain
+from ..processors.langchain.langchain_pre_processor import langchain_pre_process_street_info, langchain_pre_process_land_use_info
+from ..processors.street_manager.street_manager_processor import street_manager_processor
 from typing import Dict, Any, Optional
 
 class OSFeatureService(OSFeatures):
@@ -27,6 +28,12 @@ class OSFeatureService(OSFeatures):
         )
     
 class LangChainSummaryService(LLMSummary):
+    async def pre_process_street_info(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        return await langchain_pre_process_street_info(data)
+    
+    async def pre_process_land_use_info(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        return await langchain_pre_process_land_use_info(data)
+    
     async def summarize_results(self, data: Dict[str, Any], route_type: str) -> Dict[str, Any]:
         return await process_with_langchain(data, route_type)
 
@@ -35,4 +42,5 @@ class DataService(BBOXGeometry, StreetManagerStats):
         return await get_bbox_from_usrn(usrn, buffer_distance)
     
     async def get_street_manager_stats(self, usrn: str) -> dict:
-        return await get_street_manager_stats(usrn)
+        processor = street_manager_processor()
+        return await processor(usrn)

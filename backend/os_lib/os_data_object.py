@@ -5,6 +5,7 @@ from operator import itemgetter
 from .os_endpoints import NGDAPIEndpoint
 from .request_functions import fetch_data, fetch_data_auth
 
+# TODO add better more explicit error handling
 class OSDataObject:
     """
     Returns an instance of the OSDataObject class which can be used to interact with the OS NGD API.

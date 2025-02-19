@@ -64,6 +64,7 @@ app.get("/street-info")(route_handler.get_street_info_route)
 app.get("/street-info-llm")(route_handler.get_street_info_route_llm)
 app.get("/land-use-info")(route_handler.get_land_use_route)
 app.get("/land-use-info-llm")(route_handler.get_land_use_route_llm)
+app.get("/collaborative-street-works")(route_handler.get_collaborative_street_works_route)
 
 if __name__ == "__main__":
     app.start(port=8080)
