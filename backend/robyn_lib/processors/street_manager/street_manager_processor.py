@@ -1,7 +1,9 @@
 from typing import Dict, Any, Callable, Coroutine
 from loguru import logger
 import asyncio
-from .config import connect_to_motherduck, create_street_manager_queries
+from .config import create_street_manager_queries
+from ...db.database_pool import MotherDuckPool
+
 
 def stringify_list(data_list):
     if isinstance(data_list, list):
@@ -16,10 +18,10 @@ def stringify_list(data_list):
 def street_manager_processor() -> Callable[[str], Coroutine[Any, Any, Dict[str, Any]]]:
     """Creates a street manager processor that executes all available queries"""
     queries = create_street_manager_queries()
-
+    pool = MotherDuckPool()
     async def process_street_manager_stats(usrn: str) -> Dict[str, Any]:
         try:
-            async with connect_to_motherduck() as con:
+            async with pool.get_connection() as con:
                 # 1 Execute impact levels query
                 # impact_levels = await asyncio.to_thread(
                 #     con.execute,
@@ -73,9 +75,7 @@ def street_manager_processor() -> Callable[[str], Coroutine[Any, Any, Dict[str, 
                         else ["NO DATA"]
                     )
                 }
-
         except Exception as e:
             logger.error(f"Error processing street manager stats: {e}")
             raise
-
     return process_street_manager_stats

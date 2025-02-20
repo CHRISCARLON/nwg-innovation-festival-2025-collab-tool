@@ -2,8 +2,8 @@ from taipy.gui import Gui
 import taipy.gui.builder as tgb
 import requests
 import json
-from collections import Counter
 
+#TODO: Split this out into modules!
 # Initial state variables
 collection_id = ""
 usrn = ""
@@ -15,42 +15,6 @@ def initialize_state(state):
     state.usrn = usrn
     state.response_data = response_data
     state.formatted_data = formatted_data
-
-def format_response(data):
-    # Try to parse string data into JSON if needed
-    if isinstance(data, str):
-        try:
-            data = json.loads(data)
-        except json.JSONDecodeError:
-            return data
-    
-    # Return string representation if data is not a dictionary
-    if not isinstance(data, dict):
-        return str(data)
-    
-    features = data.get('features', [])
-    
-    # Extract and analyse data
-    land_use_types = Counter(f['properties']['oslandusetiera'] for f in features)
-    descriptions = Counter(f['properties']['description'] for f in features)
-    total_area = sum(f['properties']['geometry_area'] for f in features)
-    
-
-    # Construct the summary
-    summary_sections = [
-        "#### Summary",
-        f"Total Properties: {len(features)}",
-        f"Total Area: {total_area:.2f} sq meters",
-        "\n",
-        "#### Land Use Categories",
-        *[f"- {use}: {count} properties" for use, count in land_use_types.most_common()],
-        "\n",
-        "#### Property Types",
-        *[f"- {desc}: {count}" for desc, count in descriptions.most_common()],
-        "\n"
-    ]
-    
-    return "\n\n".join(summary_sections)
 
 def clear_response(state):
     """Helper function to clear response data"""
@@ -65,9 +29,11 @@ def fetch_street_llm(state):
         params = {
             "usrn": state.usrn
         }
+
         print(f"Fetching Street Info with params: {params}")
         response = requests.get(f"{api_base_url}/street-info-llm", params=params)
         response.raise_for_status()
+        
         state.response_data = json.dumps(response.json(), indent=2)
         state.formatted_data = state.response_data 
         print(f"Response received: {state.response_data}")
@@ -85,11 +51,12 @@ def fetch_land_use_llm(state):
         params = {
             "usrn": state.usrn
         }
+
         print(f"Fetching Land Use Info with params: {params}")
         response = requests.get(f"{api_base_url}/land-use-info-llm", params=params)
         response.raise_for_status()
+
         state.response_data = json.dumps(response.json(), indent=2)
-        state.formatted_data = format_response(state.response_data)
         print(f"Response received: {state.formatted_data}")
     except Exception as e:
         state.response_data = f"Error: {str(e)}"
@@ -111,10 +78,6 @@ with tgb.Page() as page:
                 # Input section
                 tgb.text("### Input Parameters", mode="md", class_name="text-xl font-semibold text-gray-700 mb-4")
                 
-                # Collection ID input
-                tgb.text("Collection ID", class_name="text-sm font-medium text-gray-600 mb-2")
-                tgb.input("{collection_id}", class_name="w-full p-2 border rounded-md mb-4")
-                
                 # USRN input
                 tgb.text("USRN", class_name="text-sm font-medium text-gray-600 mb-2")
                 tgb.input("{usrn}", class_name="w-full p-2 border rounded-md mb-6")
@@ -124,7 +87,7 @@ with tgb.Page() as page:
                 
                 # Buttons
                 with tgb.part(class_name="space-y-3"):
-                    tgb.button("📊 Fetch RAMI Data", 
+                    tgb.button("📊 Fetch Street Data", 
                             on_action=fetch_street_llm, 
                             class_name="w-full p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700")
                     tgb.button("🏢 Fetch Land Use Data", 

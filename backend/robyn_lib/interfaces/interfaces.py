@@ -34,7 +34,6 @@ class LLMSummary(ABC):
     async def pre_process_land_use_info(self, data: Dict[str, Any]) -> Dict[str, Any]:
         pass
     
-    
 
 class BBOXGeometry(ABC):
     """
@@ -55,3 +54,4 @@ class StreetManagerStats(ABC):
     @abstractmethod
     async def get_street_manager_stats(self, usrn: str) -> dict:
         pass
+

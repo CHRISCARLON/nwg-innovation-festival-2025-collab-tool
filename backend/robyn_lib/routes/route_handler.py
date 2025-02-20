@@ -31,6 +31,9 @@ class FeatureRouteHandler:
         self.llm_summary_service = llm_summary_service
 
     async def get_street_info_route(self, request: Request) -> Response:
+        """
+        Get street info only
+        """
         try:
             usrn = request.query_params.get('usrn')
             if not usrn:
@@ -79,6 +82,9 @@ class FeatureRouteHandler:
             )
 
     async def get_street_info_route_llm(self,request: Request) -> Response:
+        """
+        Get street info with llm summary
+        """
         try:
             usrn = request.query_params.get('usrn')
             if not usrn:
@@ -128,50 +134,56 @@ class FeatureRouteHandler:
             )
 
     async def get_land_use_route(self,request: Request) -> Response:
-            try:
-                usrn = request.query_params.get('usrn')
-                if not usrn:
-                    raise ValueError("Missing required parameter: usrn")
-                
-                path_type = RouteType.LAND_USE.value
+        """
+        Get land use only
+        """
+        try:
+            usrn = request.query_params.get('usrn')
+            if not usrn:
+                raise ValueError("Missing required parameter: usrn")
+            
+            path_type = RouteType.LAND_USE.value
 
-                # Get bbox from USRN
-                minx, miny, maxx, maxy = await self.geometry_service.get_bbox_from_usrn(usrn)
-                bbox = f"{minx},{miny},{maxx},{maxy}"
-                crs = "http://www.opengis.net/def/crs/EPSG/0/27700"
-                bbox_crs = "http://www.opengis.net/def/crs/EPSG/0/27700"
+            # Get bbox from USRN
+            minx, miny, maxx, maxy = await self.geometry_service.get_bbox_from_usrn(usrn)
+            bbox = f"{minx},{miny},{maxx},{maxy}"
+            crs = "http://www.opengis.net/def/crs/EPSG/0/27700"
+            bbox_crs = "http://www.opengis.net/def/crs/EPSG/0/27700"
 
-                # Process features
-                features = await self.feature_service.get_features(
-                    path_type=path_type,
-                    usrn=usrn,
-                    bbox=bbox,
-                    bbox_crs=bbox_crs,
-                    crs=crs
-                )
+            # Process features
+            features = await self.feature_service.get_features(
+                path_type=path_type,
+                usrn=usrn,
+                bbox=bbox,
+                bbox_crs=bbox_crs,
+                crs=crs
+            )
 
-                simplified_features = await self.llm_summary_service.pre_process_land_use_info(features)
+            simplified_features = await self.llm_summary_service.pre_process_land_use_info(features)
 
-                return Response(
-                    status_code=200,
-                    headers={"Content-Type": "application/json"},
-                    description=json.dumps(simplified_features)
-                )
+            return Response(
+                status_code=200,
+                headers={"Content-Type": "application/json"},
+                description=json.dumps(simplified_features)
+            )
 
-            except ValueError as ve:
-                return Response(
-                    status_code=400,
-                    headers={"Content-Type": "application/json"},
-                    description=json.dumps({"error": str(ve)})
-                )
-            except Exception as e:
-                return Response(
-                    status_code=500,
-                    headers={"Content-Type": "application/json"},
-                    description=json.dumps({"error": str(e)})
-                )
+        except ValueError as ve:
+            return Response(
+                status_code=400,
+                headers={"Content-Type": "application/json"},
+                description=json.dumps({"error": str(ve)})
+            )
+        except Exception as e:
+            return Response(
+                status_code=500,
+                headers={"Content-Type": "application/json"},
+                description=json.dumps({"error": str(e)})
+            )
 
     async def get_land_use_route_llm(self,request: Request) -> Response:
+        """
+        Get land use with llm summary
+        """
         try:
             usrn = request.query_params.get('usrn')
             if not usrn:
@@ -218,6 +230,9 @@ class FeatureRouteHandler:
             )
 
     async def get_collaborative_street_works_route(self,request: Request) -> Response:
+        """
+        Get collaborative street works recommendation
+        """
         try:
             usrn = request.query_params.get('usrn')
             if not usrn:

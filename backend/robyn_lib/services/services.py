@@ -44,3 +44,4 @@ class DataService(BBOXGeometry, StreetManagerStats):
     async def get_street_manager_stats(self, usrn: str) -> dict:
         processor = street_manager_processor()
         return await processor(usrn)
+
