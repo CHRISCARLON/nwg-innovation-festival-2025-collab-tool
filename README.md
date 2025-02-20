@@ -41,7 +41,9 @@ It consists of a Python backend using Robyn framework and a frontend built with 
 
 ### Frontend (Taipy GUI)
 
-TBC - currently just a basic frontend to test the backend and is out of date.
+Currently just a very basic frontend to test the backend - this will be improved.   
+
+<img width="1209" alt="Screenshot 2025-02-20 at 16 24 12" src="https://github.com/user-attachments/assets/0c05422e-c161-4f3f-99a9-033373cb3282" />
 
 ### Backend (Robyn)
 
