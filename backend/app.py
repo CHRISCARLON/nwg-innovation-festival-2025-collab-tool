@@ -46,12 +46,12 @@ async def log_response(response: Response):
     return response
 
 # DEFINE ROUTES
-# Initialize dependencies
+# Initialise dependencies
 feature_service = OSFeatureService()
 data_service = DataService()
 llm_summary_service = LangChainSummaryService()
 
-# Create handler with dependencies
+# Initialise route handler
 route_handler = FeatureRouteHandler(
     feature_service=feature_service,
     geometry_service=data_service,
@@ -59,12 +59,41 @@ route_handler = FeatureRouteHandler(
     llm_summary_service=llm_summary_service
 )
 
-# Create routes
-app.get("/street-info")(route_handler.get_street_info_route)
-app.get("/street-info-llm")(route_handler.get_street_info_route_llm)
-app.get("/land-use-info")(route_handler.get_land_use_route)
-app.get("/land-use-info-llm")(route_handler.get_land_use_route_llm)
-app.get("/collaborative-street-works")(route_handler.get_collaborative_street_works_route)
+# Define endpoints
+@app.get("/street-info")
+async def street_info_route(request):
+    """
+    Summary of network and RAMI data as well as street manager stats
+    """
+    return await route_handler.get_street_info_route(request)
+
+@app.get("/street-info-llm")
+async def street_info_llm_route(request):
+    """
+    Summary of network and RAMI data as well as street manager stats + llm summary of all data
+    """
+    return await route_handler.get_street_info_route_llm(request)
+
+@app.get("/land-use-info")
+async def land_use_route(request):
+    """
+    Summary of Land use and building information
+    """
+    return await route_handler.get_land_use_route(request)
+
+@app.get("/land-use-info-llm")
+async def land_use_llm_route(request):
+    """
+    Summary of Land use and building information + llm summary of all data
+    """
+    return await route_handler.get_land_use_route_llm(request)
+
+@app.get("/collaborative-street-works")
+async def collaborative_street_works_route(request):
+    """
+    Collaborative street works recommendation
+    """
+    return await route_handler.get_collaborative_street_works_route(request)
 
 if __name__ == "__main__":
-    app.start(port=8080)
+    app.start(host="0.0.0.0", port=8080)

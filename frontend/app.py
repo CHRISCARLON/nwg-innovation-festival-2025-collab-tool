@@ -62,8 +62,6 @@ def fetch_street_llm(state):
         # Clear existing response first
         clear_response(state)
         
-        clean_collection_id = state.collection_id.replace("collection_id=", "").replace("%3D", "=")
-        
         params = {
             "usrn": state.usrn
         }
@@ -83,7 +81,6 @@ def fetch_land_use_llm(state):
         # Clear existing response first
         clear_response(state)
         
-        clean_collection_id = state.collection_id.replace("collection_id=", "").replace("%3D", "=")
         
         params = {
             "usrn": state.usrn

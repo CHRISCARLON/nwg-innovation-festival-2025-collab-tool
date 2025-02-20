@@ -1,0 +1,10 @@
+langchain
+langchain-openai
+requests
+aiohttp
+loguru
+pyarrow
+duckdb
+shapely
+robyn
+pandas

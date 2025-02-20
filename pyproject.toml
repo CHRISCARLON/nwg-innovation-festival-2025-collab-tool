@@ -1,5 +1,5 @@
 [project]
-name = "os-data-fetcher"
+name = "rapid-street-assessment-rool"
 version = "0.1.0"
 description = "Rapid Street Assessments (RSAs) are designed to quickly retrieve comprehensive information about streets and the surrounding area."
 readme = "README.md"

@@ -1,12 +1,12 @@
 # Rapid Street Assessment Tool
 
+🚧 THIS IS A WORK IN PROGRESS.
+
 ## Overview
 
 Rapid Street Assessment (RSAs) are designed to provide quick, comprehensive analysis of street and land use data - using USRNs (Unique Street Reference Numbers).
 
 It consists of a Python backend using Robyn framework and a frontend built with Taipy GUI.
-
-THIS IS A WORK IN PROGRESS.
 
 ## Core Features
 
@@ -18,7 +18,6 @@ THIS IS A WORK IN PROGRESS.
   - Special designations and restrictions
   - Engineering difficulties
   - Traffic sensitivity
-  - Street Impact Score
   - Street Manager Aggregated Stats
 - Uses chat gpt-4o mini to generate human-readable analysis of the technical data
 
@@ -32,6 +31,12 @@ THIS IS A WORK IN PROGRESS.
   - Building characteristics
 - Uses chat gpt-4o mini to generate human-readable analysis of the technical data
 
+### 3. Collaborative Street Works Analysis
+
+- Retrieves and processes street manager data, street information and land use data and combines them into a single object,
+- Merges insight from land use and street informatioon to provide a recommendation for collaborative street works
+- Uses chat gpt-4o mini to generate human-readable analysis of the technical data
+
 ## Technical Architecture
 
 ### Frontend (Taipy GUI)
@@ -41,8 +46,9 @@ TBC - currently just a basic frontend to test the backend and is out of date.
 ### Backend (Robyn)
 
 - RESTful API endpoints:
-  - `/street-info` and `/street-info-llm`: Street network and RAMI data
-  - `/land-use-info` and `/land-use-info-llm`: Land use and building information
+  - `/street-info` and `/street-info-llm`: Summary of network and RAMI data as well as street manager stats
+  - `/land-use-info` and `/land-use-info-llm`: Summary of Land use and building information
+  - `/collaborative-street-works-llm`: Collaborative street works recommendation endpoint
 - Asynchronous processing of multiple OS NGD API calls
 - Intelligent data filtering and data aggregation
 - Integration with OpenAI's chat gpt-4o mini for data interpretation

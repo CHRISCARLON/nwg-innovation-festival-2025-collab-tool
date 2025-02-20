@@ -13,9 +13,9 @@ class StreetAnalysis(BaseModel):
     location: List[str] = Field(description="Name of street and the location of the street")
     key_characteristics: List[str] = Field(description="Key characteristics of the road network including who manages the road network")
     special_designations: List[str] = Field(description="Special designations or restrictions present for this USRN")
-    past_work_history: List[str] = Field(description="Work history of the specific USRN. This will include last month's work info, a year worth of work info, and last month's impact scores (please always include these historical impact scores and data in your response). Please tell us if any collaborative street working has been done here last month and over the last 12 months and make this clear in your response.")
+    past_work_history: List[str] = Field(description="Work history of the specific USRN. This will include last month's work info, last 12 monthsworth of work info (please always include this historical data in your response). Please tell us if any collaborative street working has been done here last month and over the last 12 months and make this clear in your response.")
     potential_challenges: List[str] = Field(description="Potential challenges or hazards present for this USRN")
-    summary: str = Field(description="Overall summary of the analysis and please make a recommendation for collaborative street works - based on all the context you now have would you advise this on a scale of 1 (being no) to 10 (being yes absolutely).")
+    summary: str = Field(description="Overall summary of the analysis and information your have found.")
 
 class LandUseAnalysis(BaseModel):
     """Structured output for land use analysis"""
@@ -25,7 +25,7 @@ class LandUseAnalysis(BaseModel):
     residential_properties: List[str] = Field(description="Names of all types of residential buildings including private homes, student accommodation, communal living")
     commercial_properties: List[str] = Field(description="Names of all commercial and business properties in the area")
     recent_changes: List[str] = Field(description="Recent modifications, updates, and changes to properties in the area")
-    summary: str = Field(description="Comprehensive overview synthesizing all key findings about the area")
+    summary: str = Field(description="Overall summary of the analysis and information your have found.")
 
 class CollaborativeStreetWorksAnalysis(BaseModel):
     """Structured output for collaborative street works analysis"""
@@ -69,15 +69,14 @@ async def process_with_langchain(data: Dict[str, Any], route_type: str) -> Dict[
         api_key=secret_api_key 
     )
 
-
     # Select appropriate parser and template based on the route type
     if route_type == RouteType.STREET_INFO.value:
         logger.info("Processing street info with Langchain")
-        prompt_template = """You are a street works and highways expert.
+        prompt_template = """You are a street works expert.
         Analyze the following data:
         {context}
-        Always focus on practical implications for street works planning and make a judgement on the potential for collaborative street works.
-        Make sure to include information about the street manager stats including past works and impact scores in the data.
+        Always focus on a summary of all the information you have found.
+        Make sure to include information about the street manager stats including past works and in the data.
         """
         structured_output = model.with_structured_output(StreetAnalysis)
         logger.info("Street analysis structured output: {structured_output}")
@@ -96,9 +95,11 @@ async def process_with_langchain(data: Dict[str, Any], route_type: str) -> Dict[
         prompt_template = """You are an expert urban planning analyst.
         Analyze the following land use data:
         {context}
-        Always focus on practical implications for street works planning and impacts to the public, environment, and road users"""
+        Always focus on a summary of all the information you have found.
+        """
         structured_output = model.with_structured_output(LandUseAnalysis)
         logger.info("Land use analysis structured output: {structured_output}")
+    
     # Create prompt template and chain to run
     prompt = PromptTemplate(template=prompt_template, input_variables=["context"])
     chain = RunnableSequence(prompt | structured_output)

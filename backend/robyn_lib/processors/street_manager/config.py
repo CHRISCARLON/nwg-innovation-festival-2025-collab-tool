@@ -26,10 +26,9 @@ async def connect_to_motherduck() -> AsyncGenerator[duckdb.DuckDBPyConnection, N
         logger.warning(f"MotherDuck connection error: {e}")
         raise
     finally:
-        if con is not None:  # Check if connection was established before closing
+        if con is not None: 
             await asyncio.to_thread(con.close)
             logger.success("MotherDuck connection closed")
-
 
 @dataclass
 class StreetManagerQueries:
@@ -47,7 +46,7 @@ def create_street_manager_queries() -> StreetManagerQueries:
     # TODO rename these variables to be more descriptive
     schema = os.getenv('STREETMANAGER_SCHEMA')
     schema2 = os.getenv('WORK_SUMMARY_SCHEMA')
-    table1 = os.getenv('STREETMANAGER_TABLE')
+    # table1 = os.getenv('STREETMANAGER_TABLE')
     table2 = os.getenv('STREETMANAGER_TABLE_2')
     table3 = os.getenv('STREETMANAGER_TABLE_3')
     

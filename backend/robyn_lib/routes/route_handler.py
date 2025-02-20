@@ -1,11 +1,13 @@
 import json
-from typing import Dict, Any
 from enum import Enum
 from robyn import Response
 from ..interfaces.interfaces import OSFeatures, BBOXGeometry, LLMSummary, StreetManagerStats
 from robyn.robyn import Request
 
 class RouteType(Enum):
+    """
+    Enum for the different route types
+    """
     STREET_INFO = "street-info"
     LAND_USE = "land-use"
     COLLABORATIVE_STREET_WORKS = "collaborative-street-works"
