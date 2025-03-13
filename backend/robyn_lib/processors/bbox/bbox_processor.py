@@ -1,5 +1,4 @@
 import os
-import duckdb
 from shapely.wkt import loads
 from loguru import logger
 import asyncio

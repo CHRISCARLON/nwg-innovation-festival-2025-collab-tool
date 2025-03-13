@@ -6,8 +6,12 @@ import asyncio
 # TODO do a proper Pytest module
 async def main():
     os_object = OSDataObject()
-    test = await os_object.get_usrn_road_links("7001592")
-    pprint(test)
+    test_usrn = await os_object.get_single_collection_features("trn-ntwk-roadlink-1", feature_id="fe9309e3-e4f0-4496-aa67-45035765bfdd")
+    pprint(test_usrn)
+
+    
+
+
 
 if __name__ == "__main__":
     asyncio.run(main())

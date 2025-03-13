@@ -62,7 +62,7 @@ class OSDataObject:
             self,
             collection_id: str,
             feature_id: Optional[str] = None,
-            query_attr: Optional[Literal["usrn", "toid", "featureid"]] = None,
+            query_attr: Optional[Literal["usrn", "toid"]] = None,
             query_attr_value: Optional[str] = None,
             bbox: Optional[str] = None,
             bbox_crs: Optional[str] = None,
@@ -79,7 +79,7 @@ class OSDataObject:
                 crs: Optional[str] - CRS for the response
             Returns:
                 API response with collection features
-            """
+            """     
 
             if feature_id:
                 endpoint: str = NGDAPIEndpoint.COLLECTION_FEATURE_BY_ID.value.format(collection_id, feature_id)
@@ -111,44 +111,62 @@ class OSDataObject:
             except Exception as e:
                 raise e
 
-    async def get_usrn_road_links(self, usrn: str) -> dict[str, Any]:
+    async def get_bulk_collection_features(self, feature_ids: list[str], collection_id: str) -> list[dict[str, Any]]:
         """ 
-        Get all road links for a given USRN asynchronously
+        Get features by their feature IDs.
+
+        This is useful for joining features together.
+
+        For example all USRNs have a set of road links associated with them.
+
+        If you have a list of USRNs you can use this function to get the road links for each USRN and join them together.
         
         Args:
-            usrn: str - The USRN (Unique Street Reference Number)
-            
+            filter_ids: list[str] - The feature IDs
+            collection_id: str - The collection ID
+
         Returns:
             Dictionary containing the USRN info and all associated road links
         """
+        try: 
+            feature_id_tasks = [
+                self.get_single_collection_features(
+                    collection_id, 
+                    feature_id=feature_id
+                ) 
+                for feature_id in feature_ids
+            ]
+                
+            feature_results = await asyncio.gather(*feature_id_tasks)
 
-        # TODO: THIS NEEDS TO BE DONE IN A MORE RESUABLE WAY 
-        # Get the USRN info
-        usrn_info = await self.get_single_collection_features(
-            "trn-ntwk-street-1", 
-            query_attr="usrn", 
-            query_attr_value=usrn
-        )
-        
-        # Extract all roadlinkids from the USRN info
-        road_link_ids = []
-        if usrn_info.get('features') and len(usrn_info['features']) > 0:
-            road_link_refs = usrn_info['features'][0]['properties'].get('roadlinkreference', [])
-            road_link_ids = [ref['roadlinkid'] for ref in road_link_refs]
-        
-        # Fetch all road links concurrently
-        road_links_tasks = [
-            self.get_single_collection_features(
-                "trn-ntwk-roadlink-1", 
-                feature_id=road_link_id
-            ) 
-            for road_link_id in road_link_ids
-        ]
-        
-        road_links_results = await asyncio.gather(*road_links_tasks)
-        
-        # Return both the USRN info and the road links data
-        return {
-            "usrn_info": usrn_info,
-            "road_links": road_links_results
-        }   
+            return feature_results
+        except Exception as e:
+            raise e
+
+    async def get_linked_features_identifier(
+        self, 
+        identifier_type: Literal[
+            "TOID",
+            "USRN",
+            "UPRN"
+        ], 
+        identifier_value: str
+    ) -> dict[str, Any]:
+        """
+        Get linked features for a given feature type and feature ID
+
+        Args:
+            identifier_type: Literal[
+                "TOID",
+                "USRN",
+                "UPRN"
+            ]
+            identifier_value: str
+        """
+        endpoint: str = NGDAPIEndpoint.LINKED_IDENTIFIERS.value.format(identifier_type, identifier_value)
+        print(endpoint)
+        try:
+            result = await fetch_data_auth(endpoint)
+            return result
+        except Exception as e:
+            raise e

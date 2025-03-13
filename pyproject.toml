@@ -17,3 +17,9 @@ dependencies = [
     "shapely>=2.0.7",
     "taipy>=4.0.0",
 ]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.1.0",
+    "pytest>=8.3.5",
+]
