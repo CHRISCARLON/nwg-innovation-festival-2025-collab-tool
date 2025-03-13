@@ -40,7 +40,6 @@ async def fetch_data_auth(endpoint: str) -> dict:
         async with aiohttp.ClientSession() as session:
             async with session.get(endpoint, headers=headers) as response:
                 response.raise_for_status()
-                print(response.url)
                 result = await response.json()
                 return result
     except aiohttp.ClientError as e:

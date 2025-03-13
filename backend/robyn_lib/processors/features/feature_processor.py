@@ -51,7 +51,7 @@ async def process_single_collection(
 
                 # Create coroutines for RAMI/Network collections
                 feature_coroutines = [
-                    os_data.get_single_collection_features(
+                    os_data.get_single_collection_feature(
                         collection_id=collection_id,
                         query_attr="usrn",
                         query_attr_value=usrn
@@ -71,7 +71,7 @@ async def process_single_collection(
                 
                 # Create coroutines for Land Use/Building collections
                 feature_coroutines = [
-                    os_data.get_single_collection_features(
+                    os_data.get_single_collection_feature(
                         collection_id=collection_id,
                         bbox=bbox,
                         bbox_crs=bbox_crs or "http://www.opengis.net/def/crs/EPSG/0/27700",

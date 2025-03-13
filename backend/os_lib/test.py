@@ -2,50 +2,62 @@ from os_data_object import OSDataObject
 from pprint import pprint
 import asyncio
 
-def extract_feature_identifiers(api_response, feature_type):
-    """
-    Extract all identifiers for a specified correlatedFeatureType
-    from a response with a 'correlations' list
+def get_roadlink_ids(street_data):
+    roadlink_ids = []
     
-    Args:
-        api_response: Dictionary containing a 'correlations' key with a list value
-        feature_type: The correlatedFeatureType to search for (e.g., 'RoadLink', 'TopographicArea')
+    if 'properties' in street_data and 'roadlinkreference' in street_data['properties']:
+        roadlink_references = street_data['properties']['roadlinkreference']
         
-    Returns:
-        list: All identifiers for the specified feature type
-    """
-    identifiers = []
+        for ref in roadlink_references:
+            if 'roadlinkid' in ref:
+                roadlink_ids.append(ref['roadlinkid'])
     
-    # Check if the response has a 'correlations' key
-    if 'correlations' in api_response and isinstance(api_response['correlations'], list):
-        # Find the dictionary with correlatedFeatureType matching the specified feature_type
-        for item in api_response['correlations']:
-            if item.get('correlatedFeatureType') == feature_type:
-                # Extract all identifiers from the correlatedIdentifiers list
-                if 'correlatedIdentifiers' in item and isinstance(item['correlatedIdentifiers'], list):
-                    identifiers = [
-                        id_obj['identifier'] 
-                        for id_obj in item['correlatedIdentifiers']
-                        if isinstance(id_obj, dict) and 'identifier' in id_obj
-                    ]
-                    break  # Stop once we've found and processed the feature entry
-    
-    return identifiers
+    return roadlink_ids
 
-# Example usage:
-# api_response = {'correlations': [{'correlatedFeatureType': 'TopographicArea', ...}, 
-#                                 {'correlatedFeatureType': 'RoadLink', ...}, ...]}
-# roadlink_ids = extract_feature_identifiers(api_response, 'RoadLink')
-# topographic_ids = extract_feature_identifiers(api_response, 'TopographicArea')
+def get_roadnode_ids(roadlink_data):
+    roadnode_ids = []
+    
+    if isinstance(roadlink_data, list):
+        for feature in roadlink_data:
+            if 'properties' in feature:
+                if 'endnode' in feature['properties']:
+                    roadnode_ids.append(feature['properties']['endnode'])
+                if 'startnode' in feature['properties']:
+                    roadnode_ids.append(feature['properties']['startnode'])
+
+    elif isinstance(roadlink_data, dict):
+        if 'properties' in roadlink_data:
+            if 'endnode' in roadlink_data['properties']:
+                roadnode_ids.append(roadlink_data['properties']['endnode'])
+            if 'startnode' in roadlink_data['properties']:
+                roadnode_ids.append(roadlink_data['properties']['startnode'])
+    
+    unique_nodes = []
+    for node in roadnode_ids:
+        if node not in unique_nodes:
+            unique_nodes.append(node)
+    
+    return unique_nodes
+
 
 # Quickly test the OSDataObject
 # TODO do a proper Pytest module
 async def main():
     os_object = OSDataObject()
-    test_usrn = await os_object.get_linked_features_identifier("USRN", "23012059")
-    correlated_features = extract_feature_identifiers(test_usrn, 'RoadLink')
-    pprint(correlated_features)
+    test_usrn = await os_object.get_single_collection_feature("trn-ntwk-street-1", "23012059")
+    pprint(test_usrn)
 
+    roadlink_ids = get_roadlink_ids(test_usrn)
+    pprint(roadlink_ids)
+
+    test_roadlink_bulk = await os_object.get_bulk_collection_feature(collection_id="trn-ntwk-roadlink-1", identifiers=roadlink_ids)
+    pprint(test_roadlink_bulk)
+
+    roadnode_ids = get_roadnode_ids(test_roadlink_bulk)
+    pprint(roadnode_ids)
+
+    test_roadnode_bulk = await os_object.get_bulk_collection_feature(collection_id="trn-ntwk-roadnode-1", identifiers=roadnode_ids)
+    pprint(test_roadnode_bulk)
 
 if __name__ == "__main__":
     asyncio.run(main())
