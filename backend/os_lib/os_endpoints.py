@@ -12,3 +12,4 @@ class NGDAPIEndpoint(Enum):
     COLLECTION_SCHEMA = BASE_PATH.format("collections/{}/schema")
     COLLECTION_QUERYABLES = BASE_PATH.format("collections/{}/queryables")
     COLLECTION_FEATURES = BASE_PATH.format("collections/{}/items")
+    COLLECTION_FEATURE_BY_ID = BASE_PATH.format("collections/{}/items/{}")

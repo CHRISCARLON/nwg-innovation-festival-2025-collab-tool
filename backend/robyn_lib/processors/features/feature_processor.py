@@ -4,7 +4,7 @@ from loguru import logger
 from os_lib.os_data_object import OSDataObject
 from ...routes.route_handler import RouteType
 
-async def process_features(
+async def process_single_collection(
     path_type: str,
     usrn: str,
     bbox: str,
@@ -48,12 +48,13 @@ async def process_features(
                     "trn-rami-specialdesignationline-1",
                     "trn-rami-specialdesignationpoint-1"
                 ]
+
                 # Create coroutines for RAMI/Network collections
                 feature_coroutines = [
-                    os_data.get_collection_features(
+                    os_data.get_single_collection_features(
                         collection_id=collection_id,
-                        usrn_attr="usrn",
-                        usrn_attr_value=usrn
+                        query_attr="usrn",
+                        query_attr_value=usrn
                     )
                     for collection_id in collection_ids
                 ]
@@ -70,7 +71,7 @@ async def process_features(
                 
                 # Create coroutines for Land Use/Building collections
                 feature_coroutines = [
-                    os_data.get_collection_features(
+                    os_data.get_single_collection_features(
                         collection_id=collection_id,
                         bbox=bbox,
                         bbox_crs=bbox_crs or "http://www.opengis.net/def/crs/EPSG/0/27700",
@@ -107,7 +108,6 @@ async def process_features(
                 
                 if 'geometry' in feature_copy:
                     raise ValueError(f"Failed to remove geometry from feature in {collection_id}")
-                
                 
                 filtered_features.append(feature_copy)
 

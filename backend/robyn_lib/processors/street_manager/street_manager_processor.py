@@ -4,8 +4,8 @@ import asyncio
 from .config import create_street_manager_queries
 from ...db.database_pool import MotherDuckPool
 
-
 def stringify_list(data_list):
+    """Stringify a list of data"""
     if isinstance(data_list, list):
         return [
             {k: str(v) if v is not None else "" for k, v in item.items()}

@@ -70,35 +70,42 @@ async def process_with_langchain(data: Dict[str, Any], route_type: str) -> Dict[
     )
 
     # Select appropriate parser and template based on the route type
-    if route_type == RouteType.STREET_INFO.value:
-        logger.info("Processing street info with Langchain")
-        prompt_template = """You are a street works expert.
-        Analyze the following data:
-        {context}
-        Always focus on a summary of all the information you have found.
-        Make sure to include information about the street manager stats including past works and in the data.
-        """
-        structured_output = model.with_structured_output(StreetAnalysis)
-        logger.info("Street analysis structured output: {structured_output}")
-    elif route_type == RouteType.COLLABORATIVE_STREET_WORKS.value:
-        logger.info("Processing collaborative street works with Langchain")
-        prompt_template = """You are a street works collaboration expert.
-        Analyze the following data:
-        {context}
-        Always focus on practical implications for street works planning and make a judgement on the potential for collaborative street works.
-        """
-        structured_output = model.with_structured_output(CollaborativeStreetWorksAnalysis)
-        logger.info("Collaborative street works analysis structured output: {structured_output}")
-    else: 
-        # Else RouteType.LAND_USE.value
-        logger.info("Processing land use with Langchain")
-        prompt_template = """You are an expert urban planning analyst.
-        Analyze the following land use data:
-        {context}
-        Always focus on a summary of all the information you have found.
-        """
-        structured_output = model.with_structured_output(LandUseAnalysis)
-        logger.info("Land use analysis structured output: {structured_output}")
+    match route_type:
+        # BASIC ROUTES
+        case RouteType.STREET_INFO.value:
+            logger.info("Processing street info with Langchain")
+            prompt_template = """You are a street works expert.
+            Analyze the following data:
+            {context}
+            Always focus on a summary of all the information you have found.
+            Make sure to include information about the street manager stats that are included.
+            """
+            structured_output = model.with_structured_output(StreetAnalysis)
+            logger.info("Street analysis structured output: {structured_output}")
+
+        case RouteType.LAND_USE.value:
+            logger.info("Processing land use with Langchain")
+            prompt_template = """You are an expert urban planning analyst.
+            Analyze the following land use data:
+            {context}
+            Always focus on a summary of all the information you have found.
+            """
+            structured_output = model.with_structured_output(LandUseAnalysis)
+            logger.info("Land use analysis structured output: {structured_output}")
+        
+        # COMPOSITE ROUTES
+        case RouteType.COLLABORATIVE_STREET_WORKS.value:
+            logger.info("Processing collaborative street works with Langchain")
+            prompt_template = """You are a street works collaboration expert.
+            Analyze the following data:
+            {context}
+            Always focus on practical implications for street works planning and make a judgement on the potential for collaborative street works.
+            """
+            structured_output = model.with_structured_output(CollaborativeStreetWorksAnalysis)
+            logger.info("Collaborative street works analysis structured output: {structured_output}")
+        
+        case _:
+            raise ValueError(f"Unknown route type: {route_type}")
     
     # Create prompt template and chain to run
     prompt = PromptTemplate(template=prompt_template, input_variables=["context"])

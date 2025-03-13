@@ -46,7 +46,8 @@ async def langchain_pre_process_street_info(data: Dict[str, Any]) -> Dict[str, A
             'timeframe': props.get('timeinterval'),
             'location': props.get('locationdescription'),
             'details': props.get('designationdescription'),
-            'effective_date': props.get('effectivestartdate')
+            'effective_date': props.get('effectivestartdate'),
+            'end_date': props.get('effectiveenddate')
         }
         
         # Only include non-None values
@@ -58,7 +59,6 @@ async def langchain_pre_process_street_info(data: Dict[str, Any]) -> Dict[str, A
     if 'street_manager_stats' in data:
         raw_stats = data['street_manager_stats']
         stats = {
-            # 'last_month_impact_levels': raw_stats.get('last_month_impact_levels', ['NO DATA']),
             'last_month_work_summary': raw_stats.get('last_month_work_summary', ['NO DATA']),
             '2024_work_summary': raw_stats.get('2024_work_summary', ['NO DATA'])
         }

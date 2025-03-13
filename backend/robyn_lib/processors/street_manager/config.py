@@ -46,41 +46,11 @@ def create_street_manager_queries() -> StreetManagerQueries:
     # TODO rename these variables to be more descriptive
     schema = os.getenv('STREETMANAGER_SCHEMA')
     schema2 = os.getenv('WORK_SUMMARY_SCHEMA')
-    # table1 = os.getenv('STREETMANAGER_TABLE')
-    table2 = os.getenv('STREETMANAGER_TABLE_2')
-    table3 = os.getenv('STREETMANAGER_TABLE_3')
+    completed_works_table = os.getenv('STREETMANAGER_TABLE_COMPLETED')
+    in_progress_works_table = os.getenv('STREETMANAGER_TABLE_IN_PROGRESS')
     
     return StreetManagerQueries(
-        # last_month_impact_level=f"""
-        #     WITH base_data AS (
-        #         SELECT 
-        #             usrn,
-        #             highway_authority,
-        #             CAST(weighted_impact_level AS VARCHAR) as weighted_impact_level
-        #         FROM {schema}.{table1}
-        #         WHERE usrn = ?
-        #     ),
-        #     ranked_impacts AS (
-        #         SELECT 
-        #             CAST(weighted_impact_level AS VARCHAR) as weighted_impact_level,
-        #             CAST(RANK() OVER (
-        #                 PARTITION BY highway_authority 
-        #                 ORDER BY weighted_impact_level DESC
-        #             ) AS VARCHAR) as authority_rank
-        #         FROM {schema}.{table1} 
-        #         WHERE highway_authority = (
-        #             SELECT highway_authority 
-        #             FROM base_data
-        #         )
-        #     )
-        #     SELECT 
-        #         bd.weighted_impact_level,
-        #         ri.authority_rank
-        #     FROM base_data bd
-        #     LEFT JOIN ranked_impacts ri
-        #         ON bd.weighted_impact_level = ri.weighted_impact_level
-        # """,      
-        last_month_work_summary=f"""
+            last_month_work_summary=f"""
             SELECT
                 highway_authority,
                 promoter_organisation,
@@ -88,7 +58,7 @@ def create_street_manager_queries() -> StreetManagerQueries:
                 activity_type,
                 collaborative_working,
                 COUNT(*) as work_count
-            FROM {schema}.{table2}
+            FROM {schema}.{completed_works_table}
             WHERE usrn = ?
             GROUP BY 
                 highway_authority,
@@ -106,7 +76,7 @@ def create_street_manager_queries() -> StreetManagerQueries:
                 activity_type,
                 collaborative_working,
                 COUNT(*) as work_count
-            FROM {schema}.{table3}
+            FROM {schema}.{in_progress_works_table}
             WHERE usrn = ?
             GROUP BY 
                 highway_authority,

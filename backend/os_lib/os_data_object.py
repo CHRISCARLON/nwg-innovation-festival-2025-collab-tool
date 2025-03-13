@@ -2,8 +2,9 @@ import os
 from typing import Optional, Literal, Dict, Any
 from urllib.parse import urlencode
 from operator import itemgetter
-from .os_endpoints import NGDAPIEndpoint
-from .request_functions import fetch_data, fetch_data_auth
+from os_endpoints import NGDAPIEndpoint
+from request_functions import fetch_data, fetch_data_auth
+import asyncio
 
 # TODO add better more explicit error handling
 class OSDataObject:
@@ -57,11 +58,12 @@ class OSDataObject:
         except Exception as e:
             raise e
 
-    async def get_collection_features(
+    async def get_single_collection_features(
             self,
             collection_id: str,
-            usrn_attr: Optional[Literal["usrn"]] = None,
-            usrn_attr_value: Optional[str] = None,
+            feature_id: Optional[str] = None,
+            query_attr: Optional[Literal["usrn", "toid", "featureid"]] = None,
+            query_attr_value: Optional[str] = None,
             bbox: Optional[str] = None,
             bbox_crs: Optional[str] = None,
             crs: Optional[str] = None
@@ -78,14 +80,18 @@ class OSDataObject:
             Returns:
                 API response with collection features
             """
-            endpoint: str = NGDAPIEndpoint.COLLECTION_FEATURES.value.format(collection_id)
+
+            if feature_id:
+                endpoint: str = NGDAPIEndpoint.COLLECTION_FEATURE_BY_ID.value.format(collection_id, feature_id)
+            else:
+                endpoint: str = NGDAPIEndpoint.COLLECTION_FEATURES.value.format(collection_id)
 
             # Build query parameters
             query_params: Dict[str, Any] = {}
 
             # Add USRN filter if provided
-            if usrn_attr and usrn_attr_value:
-                query_params['filter'] = f"{usrn_attr}={usrn_attr_value}"
+            if query_attr and query_attr_value:
+                query_params['filter'] = f"{query_attr}={query_attr_value}"
 
             # Add bbox parameters if provided
             if bbox:
@@ -104,3 +110,45 @@ class OSDataObject:
                 return result
             except Exception as e:
                 raise e
+
+    async def get_usrn_road_links(self, usrn: str) -> dict[str, Any]:
+        """ 
+        Get all road links for a given USRN asynchronously
+        
+        Args:
+            usrn: str - The USRN (Unique Street Reference Number)
+            
+        Returns:
+            Dictionary containing the USRN info and all associated road links
+        """
+
+        # TODO: THIS NEEDS TO BE DONE IN A MORE RESUABLE WAY 
+        # Get the USRN info
+        usrn_info = await self.get_single_collection_features(
+            "trn-ntwk-street-1", 
+            query_attr="usrn", 
+            query_attr_value=usrn
+        )
+        
+        # Extract all roadlinkids from the USRN info
+        road_link_ids = []
+        if usrn_info.get('features') and len(usrn_info['features']) > 0:
+            road_link_refs = usrn_info['features'][0]['properties'].get('roadlinkreference', [])
+            road_link_ids = [ref['roadlinkid'] for ref in road_link_refs]
+        
+        # Fetch all road links concurrently
+        road_links_tasks = [
+            self.get_single_collection_features(
+                "trn-ntwk-roadlink-1", 
+                feature_id=road_link_id
+            ) 
+            for road_link_id in road_link_ids
+        ]
+        
+        road_links_results = await asyncio.gather(*road_links_tasks)
+        
+        # Return both the USRN info and the road links data
+        return {
+            "usrn_info": usrn_info,
+            "road_links": road_links_results
+        }   
