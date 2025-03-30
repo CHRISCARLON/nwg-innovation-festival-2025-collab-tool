@@ -1,6 +1,6 @@
 # Rapid Street Assessment Tool
 
-🚧 THIS IS A WORK IN PROGRESS.
+![ChatGPT Image Mar 30, 2025 at 06_29_25 PM](https://github.com/user-attachments/assets/cf35a0c1-b7ce-4eb7-b10c-20f15b99f582)
 
 ## Overview
 
