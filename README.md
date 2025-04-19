@@ -1,7 +1,5 @@
 # Rapid Street Assessment Tool
 
-![ChatGPT Image Mar 30, 2025 at 06_29_25 PM](https://github.com/user-attachments/assets/cf35a0c1-b7ce-4eb7-b10c-20f15b99f582)
-
 ## Overview
 
 Rapid Street Assessment (RSAs) are designed to provide quick, comprehensive analysis of street and land use data - using USRNs (Unique Street Reference Numbers).
