@@ -4,7 +4,7 @@
 
 Rapid Street Assessment (RSAs) are designed to provide quick, comprehensive analysis of street and land use data - using USRNs (Unique Street Reference Numbers).
 
-It consists of a Python backend using Robyn framework and a frontend built with Taipy GUI.
+It consists of a Python backend using Robyn framework and a frontend built with Streamlit.
 
 Example API Call Flow:
 
@@ -41,11 +41,9 @@ Example API Call Flow:
 
 ## Technical Architecture
 
-### Frontend (Taipy GUI)
+### Frontend (Streamlit)
 
 Currently just a very basic frontend to test the backend - this will be improved.
-
-<img width="1209" alt="Screenshot 2025-02-20 at 16 24 12" src="https://github.com/user-attachments/assets/0c05422e-c161-4f3f-99a9-033373cb3282" />
 
 ### Backend (Robyn)
 
@@ -61,7 +59,7 @@ Currently just a very basic frontend to test the backend - this will be improved
 
 - Python ≥3.11
 - Robyn (API framework)
-- Taipy (GUI framework)
+- Streamlit (frontend framework)
 - LangChain (AI processing)
 - MotherDuck (data storage)
 

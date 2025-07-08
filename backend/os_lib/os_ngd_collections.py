@@ -1,12 +1,14 @@
 from typing import List
 from enum import Enum
 
+
 # Define the OS NGD Themes and Collections
 # This is used to map the collections to their feature types and parent themes
 class OSNGDCollections(Enum):
     """
     Enum for the OS NGD Collections - each collection belongs to a theme
     """
+
     def __init__(self, *args):
         self._value_ = args
 
@@ -16,43 +18,36 @@ class OSNGDCollections(Enum):
     def as_list(self) -> List[str]:
         return list(self.value)
 
-    BLD = (
-        "bld-fts-building-1",
-        "bld-fts-buildingline-1",
-        "bld-fts-buildingpart-1"
-    )
+    BLD = ("bld-fts-building-1", "bld-fts-buildingline-1", "bld-fts-buildingpart-1")
 
-    GNM = (
-        "gnm-fts-namedarea-1",
-        "gnm-fts-namedpoint-1"
-    )
+    GNM = ("gnm-fts-namedarea-1", "gnm-fts-namedpoint-1")
 
     LND = (
         "lnd-fts-land-1",
         "lnd-fts-landpoint-1",
         "lnd-fts-landform-1",
         "lnd-fts-landformline-1",
-        "lnd-fts-landformpoint-1"
+        "lnd-fts-landformpoint-1",
     )
 
     LUS = (
         "lus-fts-site-1",
         "lus-fts-siteaccesslocation-1",
-        "lus-fts-siteroutingpoint-1"
+        "lus-fts-siteroutingpoint-1",
     )
 
     STR = (
         "str-fts-compoundstructure-1",
         "str-fts-structure-1",
         "str-fts-structureline-1",
-        "str-fts-structurepoint-1"
+        "str-fts-structurepoint-1",
     )
 
     TRN = (
         "trn-fts-cartographicraildetail-1",
         "trn-fts-rail-1",
         "trn-fts-roadline-1",
-        "trn-fts-roadtrackorpath-1"
+        "trn-fts-roadtrackorpath-1",
     )
 
     NTWK = (
@@ -72,7 +67,7 @@ class OSNGDCollections(Enum):
         "trn-ntwk-roadjunction-1",
         "trn-ntwk-roadlink-1",
         "trn-ntwk-roadnode-1",
-        "trn-ntwk-street-1"
+        "trn-ntwk-street-1",
     )
 
     RAMI = (
@@ -89,20 +84,20 @@ class OSNGDCollections(Enum):
         "trn-rami-routingstructure-1",
         "trn-rami-specialdesignationarea-1",
         "trn-rami-specialdesignationline-1",
-        "trn-rami-specialdesignationpoint-1"
+        "trn-rami-specialdesignationpoint-1",
     )
 
     WTR = (
         "wtr-fts-intertidalline-1",
         "wtr-fts-tidalboundary-1",
         "wtr-fts-water-1",
-        "wtr-fts-waterpoint-1"
+        "wtr-fts-waterpoint-1",
     )
 
     NTWK_WATER = (
         "trn-ntwk-waterlink-1",
         "trn-ntwk-waterlinkset-1",
-        "trn-ntwk-waternode-1"
+        "trn-ntwk-waternode-1",
     )
 
     @classmethod
@@ -113,10 +108,12 @@ class OSNGDCollections(Enum):
     def all_datasets(cls) -> List[str]:
         return [dataset for member in cls for dataset in member.value]
 
+
 class OSNGDThemes(Enum):
     """
     Enum for the OS NGD Themes
     """
+
     def __init__(self, *args):
         self._value_ = args
 

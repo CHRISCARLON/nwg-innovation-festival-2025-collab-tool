@@ -5,24 +5,26 @@ from loguru import logger
 import os
 from contextlib import asynccontextmanager
 
+
 class MotherDuckPool:
     """A simple connection pool for MotherDuck with a maximum of 5 connections"""
-    _instance: Optional['MotherDuckPool'] = None
-    
+
+    _instance: Optional["MotherDuckPool"] = None
+
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
         return cls._instance
 
     def __init__(self) -> None:
-        if not hasattr(self, 'initialized'):
-            self.database = os.getenv('MD_DB')
-            self.token = os.getenv('MD_TOKEN')
-            
+        if not hasattr(self, "initialized"):
+            self.database = os.getenv("MD_DB")
+            self.token = os.getenv("MD_TOKEN")
+
             if not all([self.database, self.token]):
                 raise ValueError("MotherDuck environment variables are not present")
-                
-            self.connection_string = f'md:{self.database}?motherduck_token={self.token}&access_mode=read_only'
+
+            self.connection_string = f"md:{self.database}?motherduck_token={self.token}&access_mode=read_only"
             self._connections: List[duckdb.DuckDBPyConnection] = []
             self._max_connections = 5
             self._lock = asyncio.Lock()
@@ -57,12 +59,12 @@ class MotherDuckPool:
             # Verify connection is still valid
             await asyncio.to_thread(connection.execute, "SELECT 1")
             yield connection
-            
+
             # Return connection to pool
             async with self._lock:
                 self._connections.append(connection)
                 logger.debug("Returned connection to pool")
-                
+
         except Exception as e:
             logger.error(f"Connection error: {e}")
             await asyncio.to_thread(connection.close)

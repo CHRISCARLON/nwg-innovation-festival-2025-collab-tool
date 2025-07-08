@@ -4,26 +4,23 @@ from loguru import logger
 from os_lib.os_data_object import OSDataObject
 from ...routes.route_handler import RouteType
 
+
 async def process_single_collection(
-    path_type: str,
-    usrn: str,
-    bbox: str,
-    bbox_crs: str,
-    crs: str
+    path_type: str, usrn: str, bbox: str, bbox_crs: str, crs: str
 ) -> Dict[str, Any]:
     """
     Process features based on path type with support for both street info and land use routes
-    
+
     Args:
         path_type: str - The route path type ('land-use' or 'street-info')
         usrn: Optional[str] - USRN for filtering
         bbox: Optional[str] - Bounding box for land use queries
         bbox_crs: Optional[str] - CRS for bounding box
         crs: Optional[str] - Target CRS for response
-    
+
     Returns:
         Dict containing the combined feature collection
-    
+
     Raises:
         ValueError: For validation errors
         Exception: For other errors
@@ -31,7 +28,7 @@ async def process_single_collection(
     try:
         if not usrn:
             raise ValueError("A valid usrn is required")
-        
+
         # Define route type as this is use to determine the collections to query
         route_type = RouteType(path_type)
 
@@ -46,7 +43,7 @@ async def process_single_collection(
                     "trn-ntwk-street-1",
                     "trn-rami-specialdesignationarea-1",
                     "trn-rami-specialdesignationline-1",
-                    "trn-rami-specialdesignationpoint-1"
+                    "trn-rami-specialdesignationpoint-1",
                 ]
 
                 # Create coroutines for RAMI/Network collections
@@ -54,7 +51,7 @@ async def process_single_collection(
                     os_data.get_single_collection_feature(
                         collection_id=collection_id,
                         query_attr="usrn",
-                        query_attr_value=usrn
+                        query_attr_value=usrn,
                     )
                     for collection_id in collection_ids
                 ]
@@ -68,14 +65,15 @@ async def process_single_collection(
                 ]
                 if not bbox:
                     raise ValueError("A valid bbox is required for land use queries")
-                
+
                 # Create coroutines for Land Use/Building collections
                 feature_coroutines = [
                     os_data.get_single_collection_feature(
                         collection_id=collection_id,
                         bbox=bbox,
-                        bbox_crs=bbox_crs or "http://www.opengis.net/def/crs/EPSG/0/27700",
-                        crs=crs or "http://www.opengis.net/def/crs/EPSG/0/27700"
+                        bbox_crs=bbox_crs
+                        or "http://www.opengis.net/def/crs/EPSG/0/27700",
+                        crs=crs or "http://www.opengis.net/def/crs/EPSG/0/27700",
                     )
                     for collection_id in collection_ids
                 ]
@@ -84,7 +82,9 @@ async def process_single_collection(
                 raise ValueError(f"Unsupported path type: {path_type}")
 
         # Gather and await all coroutines
-        feature_results = await asyncio.gather(*feature_coroutines, return_exceptions=True)
+        feature_results = await asyncio.gather(
+            *feature_coroutines, return_exceptions=True
+        )
 
         # Process results
         all_features: List[Dict[str, Any]] = []
@@ -95,20 +95,22 @@ async def process_single_collection(
                 logger.error(f"Failed to fetch {collection_id}: {str(result)}")
                 continue
 
-            if not isinstance(result, dict) or 'features' not in result:
+            if not isinstance(result, dict) or "features" not in result:
                 logger.error(f"Invalid response format from {collection_id}")
                 continue
 
             # Filter out geometry from each feature
             filtered_features = []
-            for feature in result['features']:
+            for feature in result["features"]:
                 feature_copy = feature.copy()
-                if 'geometry' in feature_copy:
-                    del feature_copy['geometry']
-                
-                if 'geometry' in feature_copy:
-                    raise ValueError(f"Failed to remove geometry from feature in {collection_id}")
-                
+                if "geometry" in feature_copy:
+                    del feature_copy["geometry"]
+
+                if "geometry" in feature_copy:
+                    raise ValueError(
+                        f"Failed to remove geometry from feature in {collection_id}"
+                    )
+
                 filtered_features.append(feature_copy)
 
             # Remove geometry from each feature - as this creates too many tokens when using the llm service
@@ -116,18 +118,18 @@ async def process_single_collection(
             all_features.extend(filtered_features)
 
             # Track latest timestamp
-            if result.get('timeStamp'):
-                if latest_timestamp is None or result['timeStamp'] > latest_timestamp:
-                    latest_timestamp = result['timeStamp']
+            if result.get("timeStamp"):
+                if latest_timestamp is None or result["timeStamp"] > latest_timestamp:
+                    latest_timestamp = result["timeStamp"]
 
         if not all_features:
             logger.warning(f"No features found for USRN: {usrn}")
 
         return {
-            'type': 'FeatureCollection',
-            'numberReturned': len(all_features),
-            'timeStamp': latest_timestamp or "",
-            'features': all_features
+            "type": "FeatureCollection",
+            "numberReturned": len(all_features),
+            "timeStamp": latest_timestamp or "",
+            "features": all_features,
         }
 
     except ValueError as ve:
