@@ -6,8 +6,10 @@ from ..interfaces.interfaces import (
     BBOXGeometry,
     LLMSummary,
     StreetManagerStats,
+    NUARAssetStats,
 )
 from robyn.robyn import Request
+from loguru import logger
 
 
 class RouteType(Enum):
@@ -33,11 +35,13 @@ class FeatureRouteHandler:
         geometry_service: BBOXGeometry,
         street_manager_service: StreetManagerStats,
         llm_summary_service: LLMSummary,
+        nuar_service: NUARAssetStats,
     ):
         self.feature_service = feature_service
         self.geometry_service = geometry_service
         self.street_manager_service = street_manager_service
         self.llm_summary_service = llm_summary_service
+        self.nuar_service = nuar_service
 
     async def get_street_info_route(self, request: Request) -> Response:
         """
@@ -63,12 +67,17 @@ class FeatureRouteHandler:
                 await self.street_manager_service.get_street_manager_stats(usrn)
             )
 
+            # Get NUAR asset count
+            nuar_asset_stats = await self.nuar_service.get_asset_count(bbox)
+            logger.success(f"NUAR asset stats: {nuar_asset_stats}")
+
             # Process features
             features = await self.feature_service.get_features(
                 path_type=path_type, usrn=usrn, bbox=bbox, bbox_crs=bbox_crs, crs=crs
             )
 
             features["street_manager_stats"] = street_manager_stats
+            features["nuar_asset_stats"] = nuar_asset_stats
             simplified_features = (
                 await self.llm_summary_service.pre_process_street_info(features)
             )

@@ -60,3 +60,24 @@ class StreetManagerStats(ABC):
     @abstractmethod
     async def get_street_manager_stats(self, usrn: str) -> dict:
         pass
+
+
+class NUARAssetStats(ABC):
+    """
+    Abstract base class for NUAR asset statistics
+
+    This class is used to get asset count data from the NUAR API based on geometry bbox.
+    """
+
+    @abstractmethod
+    async def get_asset_count(self, bbox: str) -> Dict[str, Any]:
+        """
+        Get asset count from NUAR API for a given bounding box
+
+        Args:
+            bbox: str - Bounding box in format "minx,miny,maxx,maxy"
+
+        Returns:
+            Dict[str, Any] - Asset count data from NUAR API
+        """
+        pass

@@ -63,12 +63,14 @@ feature_service = OSFeatureService()
 data_service = DataService()
 llm_summary_service = LangChainSummaryService()
 
+
 # Initialise route handler
 route_handler = FeatureRouteHandler(
     feature_service=feature_service,
     geometry_service=data_service,
     street_manager_service=data_service,
     llm_summary_service=llm_summary_service,
+    nuar_service=data_service,
 )
 
 

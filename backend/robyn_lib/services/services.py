@@ -3,6 +3,7 @@ from ..interfaces.interfaces import (
     BBOXGeometry,
     LLMSummary,
     StreetManagerStats,
+    NUARAssetStats,
 )
 from ..processors.bbox.bbox_processor import get_bbox_from_usrn
 from ..processors.features.feature_processor import process_single_collection
@@ -14,6 +15,7 @@ from ..processors.langchain.langchain_pre_processor import (
 from ..processors.street_manager.street_manager_processor import (
     street_manager_processor,
 )
+from ..processors.nuar.nuar_processor import get_nuar_asset_count
 from typing import Dict, Any, Optional
 
 
@@ -47,10 +49,13 @@ class LangChainSummaryService(LLMSummary):
         return await process_with_langchain(data, route_type)
 
 
-class DataService(BBOXGeometry, StreetManagerStats):
+class DataService(BBOXGeometry, StreetManagerStats, NUARAssetStats):
     async def get_bbox_from_usrn(self, usrn: str, buffer_distance: float = 50) -> tuple:
         return await get_bbox_from_usrn(usrn, buffer_distance)
 
     async def get_street_manager_stats(self, usrn: str) -> dict:
         processor = street_manager_processor()
         return await processor(usrn)
+
+    async def get_asset_count(self, bbox: str) -> Dict[str, Any]:
+        return await get_nuar_asset_count(bbox)

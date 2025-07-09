@@ -59,10 +59,7 @@ async def process_single_collection(
             # TODO: Add building collection back in the future
             case RouteType.LAND_USE:
                 logger.info(f"Processing land use for USRN: {usrn}")
-                collection_ids = [
-                    # "bld-fts-building-1",
-                    "lus-fts-site-1"
-                ]
+                collection_ids = ["lus-fts-site-1"]
                 if not bbox:
                     raise ValueError("A valid bbox is required for land use queries")
 

@@ -61,7 +61,41 @@ async def langchain_pre_process_street_info(data: Dict[str, Any]) -> Dict[str, A
     stats = {}
     if "street_manager_stats" in data:
         raw_stats = data["street_manager_stats"]
-        stats = {"2025_work_summary": raw_stats.get("2025_work_summary", ["NO DATA"])}
+        stats["2025_work_summary"] = raw_stats.get("2025_work_summary", ["NO DATA"])
+
+    # Process NUAR asset stats if present
+    if "nuar_asset_stats" in data:
+        nuar_data = data["nuar_asset_stats"]
+
+        # Check if there's an error in the NUAR data
+        if "error" in nuar_data:
+            stats["nuar_summary"] = {
+                "error": nuar_data["error"],
+                "total_hex_grids": 0,
+                "total_asset_count": 0,
+            }
+        elif "data" in nuar_data and "collectionItems" in nuar_data["data"]:
+            # Parse the NUAR data structure
+            collection_items = nuar_data["data"]["collectionItems"]
+
+            total_hex_grids = len(collection_items)
+            total_asset_count = sum(
+                item.get("assetCount", 0) for item in collection_items
+            )
+
+            stats["nuar_summary"] = {
+                "total_hex_grids": total_hex_grids,
+                "total_asset_count": total_asset_count,
+                "grid_type": nuar_data["data"].get("gridType"),
+                "zoom_level": nuar_data["data"].get("zoomLevel"),
+            }
+        else:
+            # Handle unexpected NUAR data structure
+            stats["nuar_summary"] = {
+                "error": "Unexpected NUAR data structure",
+                "total_hex_grids": 0,
+                "total_asset_count": 0,
+            }
 
     return {
         "street": base_street,
