@@ -5,7 +5,7 @@ import asyncio
 from ...db.database_pool import MotherDuckPool
 
 
-async def get_bbox_from_usrn(usrn: str, buffer_distance: float = 50) -> tuple:
+async def get_bbox_from_usrn(usrn: str, buffer_distance: float = 5) -> tuple:
     """Get bounding box coordinates for a given USRN"""
     pool = MotherDuckPool()
     try:
@@ -37,7 +37,7 @@ async def get_bbox_from_usrn(usrn: str, buffer_distance: float = 50) -> tuple:
 
             geom = loads(df["geometry"].iloc[0])
             buffered = geom.buffer(
-                buffer_distance, cap_style="square", single_sided=False
+                buffer_distance, cap_style="round"
             )
             logger.success(f"Buffered geometry: {buffered}")
 

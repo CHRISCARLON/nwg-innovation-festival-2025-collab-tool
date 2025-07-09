@@ -83,11 +83,21 @@ async def langchain_pre_process_street_info(data: Dict[str, Any]) -> Dict[str, A
                 item.get("assetCount", 0) for item in collection_items
             )
 
+            # Extract hex grid IDs and their asset counts
+            hex_ids = [
+                {
+                    "grid_id": item.get("gridId"),
+                    "asset_count": item.get("assetCount", 0)
+                }
+                for item in collection_items
+            ]
+
             stats["nuar_summary"] = {
                 "total_hex_grids": total_hex_grids,
                 "total_asset_count": total_asset_count,
                 "grid_type": nuar_data["data"].get("gridType"),
                 "zoom_level": nuar_data["data"].get("zoomLevel"),
+                "hex_ids": hex_ids,
             }
         else:
             # Handle unexpected NUAR data structure

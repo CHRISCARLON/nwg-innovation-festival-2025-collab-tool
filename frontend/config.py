@@ -27,10 +27,10 @@ class SWACode(Enum):
 
 
 class LocationType(Enum):
-    FOOTWAY = ("footway", "Footway", 1)
-    CARRIAGEWAY = ("carriageway", "Carriageway", 1)
-    VERGE = ("verge", "Verge", 1)
-    MIX = ("mix", "Mix", 10)
+    FOOTWAY = ("footway", "Footway", 3)
+    CARRIAGEWAY = ("carriageway", "Carriageway", 10)
+    VERGE = ("verge", "Verge", 6)
+    MIX = ("mix", "Mix", 15)
 
     def __init__(self, code: str, display_name: str, score: int):
         self.code = code
@@ -102,8 +102,8 @@ class ProgrammeType(Enum):
 
 
 class TTRORequired(Enum):
-    YES = ("yes", "Yes", 6)
-    NO = ("no", "No", 2)
+    YES = ("yes", "Yes", 10)
+    NO = ("no", "No", 5)
 
     def __init__(self, code: str, display_name: str, score: int):
         self.code = code
@@ -116,14 +116,14 @@ class TTRORequired(Enum):
 
 
 class InstallationMethod(Enum):
-    OPEN_CUT = ("open_cut", "Open Cut", 8)
-    DIRECTIONAL_DRILLING = ("directional_drilling", "Directional Drilling", 2)
-    MOLING = ("moling", "Moling", 3)
-    TUNNELLING = ("tunnelling", "Tunnelling", 1)
+    OPEN_CUT = ("open_cut", "Open Cut", 10)
+    DIRECTIONAL_DRILLING = ("directional_drilling", "Directional Drilling", 5)
+    MOLING = ("moling", "Moling", 4)
+    TUNNELLING = ("tunnelling", "Tunnelling", 4)
     THRUST_BORING = ("thrust_boring", "Thrust Boring", 2)
-    PIPE_JACKING = ("pipe_jacking", "Pipe Jacking", 1)
-    SLIP_LINING = ("slip_lining", "Slip Lining", 1)
-    PIPE_BURSTING = ("pipe_bursting", "Pipe Bursting", 4)
+    PIPE_JACKING = ("pipe_jacking", "Pipe Jacking", 2)
+    SLIP_LINING = ("slip_lining", "Slip Lining", 2)
+    PIPE_BURSTING = ("pipe_bursting", "Pipe Bursting", 5)
     TRENCHING = ("trenching", "Trenching", 6)
     OTHER = ("other", "Other", 5)
 
