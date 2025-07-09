@@ -36,9 +36,7 @@ async def get_bbox_from_usrn(usrn: str, buffer_distance: float = 5) -> tuple:
                 raise ValueError(f"No geometry found for USRN: {usrn}")
 
             geom = loads(df["geometry"].iloc[0])
-            buffered = geom.buffer(
-                buffer_distance, cap_style="round"
-            )
+            buffered = geom.buffer(buffer_distance, cap_style="round")
             logger.success(f"Buffered geometry: {buffered}")
 
             return tuple(round(coord) for coord in buffered.bounds)

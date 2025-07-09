@@ -87,7 +87,7 @@ async def langchain_pre_process_street_info(data: Dict[str, Any]) -> Dict[str, A
             hex_ids = [
                 {
                     "grid_id": item.get("gridId"),
-                    "asset_count": item.get("assetCount", 0)
+                    "asset_count": item.get("assetCount", 0),
                 }
                 for item in collection_items
             ]

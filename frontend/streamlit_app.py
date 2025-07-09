@@ -28,13 +28,48 @@ from config import (
 # N3GB HEX GRID SYSTEM
 # Constants for the n3gb hex grid system
 GRID_EXTENTS = [0, 0, 750000, 1350000]
-CELL_RADIUS = [1281249.9438829257, 48304.58762201923, 182509.65769514776, 68979.50076169973, 26069.67405498836, 9849.595592375015, 3719.867784388759, 1399.497052515653, 529.4301968468868, 199.76319313961054, 75.05553499465135, 28.290163190291665, 10.392304845413264, 4.041451884327381, 1.7320508075688774, 0.5773502691896258]
-CELL_WIDTHS = [2219190, 83666, 316116, 119476, 45154, 17060, 6443, 2424, 917, 346, 130, 49, 18, 7, 3, 1]
+CELL_RADIUS = [
+    1281249.9438829257,
+    48304.58762201923,
+    182509.65769514776,
+    68979.50076169973,
+    26069.67405498836,
+    9849.595592375015,
+    3719.867784388759,
+    1399.497052515653,
+    529.4301968468868,
+    199.76319313961054,
+    75.05553499465135,
+    28.290163190291665,
+    10.392304845413264,
+    4.041451884327381,
+    1.7320508075688774,
+    0.5773502691896258,
+]
+CELL_WIDTHS = [
+    2219190,
+    83666,
+    316116,
+    119476,
+    45154,
+    17060,
+    6443,
+    2424,
+    917,
+    346,
+    130,
+    49,
+    18,
+    7,
+    3,
+    1,
+]
+
 
 def decode_hex_identifier(identifier):
     """Decode a hex grid identifier to get easting, northing, and zoom level"""
     # Add padding back if needed for base64 decoding
-    padding = '=' * (-len(identifier) % 4)
+    padding = "=" * (-len(identifier) % 4)
     base64_str = identifier + padding
 
     # Decode the base64 string to binary
@@ -49,62 +84,71 @@ def decode_hex_identifier(identifier):
 
     return easting, northing, zoom_level
 
+
 def create_hexagon(center_x, center_y, size):
     """Create a hexagon polygon centered at (center_x, center_y) with the given size"""
     points = [
         (
             center_x + size * math.cos(math.radians(angle)),
-            center_y + size * math.sin(math.radians(angle))
+            center_y + size * math.sin(math.radians(angle)),
         )
         for angle in range(30, 390, 60)
     ]
     return Polygon(points)
 
+
 def create_hex_grids_geodataframe(hex_ids_data):
     """Create a GeoDataFrame from hex grid IDs and asset counts"""
     if not hex_ids_data:
         return None
-    
+
     hex_data = []
-    
+
     for hex_info in hex_ids_data:
         grid_id = hex_info.get("grid_id")
         asset_count = hex_info.get("asset_count", 0)
-        
+
         if grid_id:
             try:
                 # Decode the hex identifier to get center coordinates and zoom level
                 easting, northing, zoom_level = decode_hex_identifier(grid_id)
-                
+
                 # Create the hexagon polygon
-                radius = CELL_RADIUS[zoom_level] if zoom_level < len(CELL_RADIUS) else CELL_RADIUS[-1]
+                radius = (
+                    CELL_RADIUS[zoom_level]
+                    if zoom_level < len(CELL_RADIUS)
+                    else CELL_RADIUS[-1]
+                )
                 hexagon = create_hexagon(easting, northing, radius)
-                
-                hex_data.append({
-                    'grid_id': grid_id,
-                    'easting': easting,
-                    'northing': northing,
-                    'zoom_level': zoom_level,
-                    'asset_count': asset_count,
-                    'geometry': hexagon
-                })
-                
+
+                hex_data.append(
+                    {
+                        "grid_id": grid_id,
+                        "easting": easting,
+                        "northing": northing,
+                        "zoom_level": zoom_level,
+                        "asset_count": asset_count,
+                        "geometry": hexagon,
+                    }
+                )
+
             except Exception as e:
                 logger.warning(f"Error decoding hex grid ID {grid_id}: {e}")
                 continue
-    
+
     if not hex_data:
         return None
-    
+
     # Create GeoDataFrame
-    gdf = gpd.GeoDataFrame(hex_data, crs="EPSG:27700") # type: ignore
-    
+    gdf = gpd.GeoDataFrame(hex_data, crs="EPSG:27700")  # type: ignore
+
     # Convert to WGS84 (EPSG:4326) for display
     gdf = gdf.to_crs(epsg=4326)
-    
+
     return gdf
 
-# COLABORATION INDEX
+
+# FETCH STREET INFO
 def fetch_street_info(usrn: str):
     """Fetch street info from the backend API"""
     try:
@@ -116,6 +160,7 @@ def fetch_street_info(usrn: str):
         return None
 
 
+# COLABORATION INDEX
 def calculate_enhanced_collaboration_index(
     location_type,
     sector_type,
@@ -162,14 +207,13 @@ def calculate_enhanced_collaboration_index(
     work_history_details = {}
 
     if street_info_data:
-        # Process NUAR data with USRN geometry filtering
         stats = street_info_data.get("stats", {})
         nuar_summary = stats.get("nuar_summary", {})
 
         # Check if NUAR data exists and is valid
         if nuar_summary and nuar_summary.get("total_asset_count") is not None and usrn:
             hex_ids = nuar_summary.get("hex_ids", [])
-            
+
             if hex_ids:
                 # Fetch USRN geometry and filter hex grids
                 logger.info(f"Fetching geometry for USRN: {usrn}")
@@ -179,35 +223,41 @@ def calculate_enhanced_collaboration_index(
                     all_hex_gdf = create_hex_grids_geodataframe(hex_ids)
                     if all_hex_gdf is not None and not all_hex_gdf.empty:
                         logger.info(f"Created {len(all_hex_gdf)} hex grids")
-                        filtered_hex_gdf = filter_hex_grids_by_usrn_intersection(all_hex_gdf, geodf)
-                        
+                        filtered_hex_gdf = filter_hex_grids_by_usrn_intersection(
+                            all_hex_gdf, geodf
+                        )
+
                         if filtered_hex_gdf is not None and not filtered_hex_gdf.empty:
-                            logger.info(f"Filtered to {len(filtered_hex_gdf)} intersecting hex grids")
+                            logger.info(
+                                f"Filtered to {len(filtered_hex_gdf)} intersecting hex grids"
+                            )
                             # Use FILTERED data for scoring
-                            total_assets = filtered_hex_gdf['asset_count'].sum()
+                            total_assets = filtered_hex_gdf["asset_count"].sum()
                             total_grids = len(filtered_hex_gdf)
-                            logger.info(f"Using filtered data: {total_assets} assets in {total_grids} grids")
+                            logger.info(
+                                f"Using filtered data: {total_assets} assets in {total_grids} grids"
+                            )
 
                             if total_assets > 0 and total_grids > 0:
                                 asset_density = total_assets / total_grids
 
                                 # Asset density scoring
                                 if asset_density >= 20:
-                                    asset_density_score = 5  # High density
+                                    asset_density_score = 10  # High density
                                 elif asset_density >= 15:
-                                    asset_density_score = 3  # Medium density
+                                    asset_density_score = 7  # Medium density
                                 elif asset_density >= 10:
-                                    asset_density_score = 2  # Low-medium density
+                                    asset_density_score = 5  # Low-medium density
                                 else:
-                                    asset_density_score = 1  # Low density
+                                    asset_density_score = 2  # Low density
 
                                 # Grid coverage scoring
-                                if total_grids >= 15:
-                                    coverage_score = 3  # Large area
-                                elif total_grids >= 10:
-                                    coverage_score = 2  # Medium area
+                                if total_grids >= 7:
+                                    coverage_score = 10  # Large area
+                                elif total_grids >= 5:
+                                    coverage_score = 5  # Medium area
                                 else:
-                                    coverage_score = 1  # Small area
+                                    coverage_score = 2  # Small area
 
                                 asset_metrics = {
                                     "total_assets": total_assets,
@@ -262,20 +312,18 @@ def calculate_enhanced_collaboration_index(
             total_works_count = 0
 
             work_organizations = []
-            
+
             for work_item in work_summary:
                 if isinstance(work_item, dict):
                     org = work_item.get("promoter_organisation", "")
                     sector = work_item.get("sector", "")
                     works = int(work_item.get("total_works", 0))
-                    
+
                     if org:
                         unique_organizations.add(org)
-                        work_organizations.append({
-                            "organization": org,
-                            "sector": sector,
-                            "works": works
-                        })
+                        work_organizations.append(
+                            {"organization": org, "sector": sector, "works": works}
+                        )
                     if sector:
                         unique_sectors.add(sector)
                     total_works_count += works
@@ -284,15 +332,15 @@ def calculate_enhanced_collaboration_index(
             org_count = len(unique_organizations)
             sector_count = len(unique_sectors)
 
-            # Organization count scoring (more organizations = more collaboration potential)
+            # Organisation count scoring
             if org_count >= 4:
-                work_history_scores["organization_count"] = 8  # High collaboration
+                work_history_scores["organization_count"] = 8  # High
             elif org_count >= 3:
-                work_history_scores["organization_count"] = 6  # Good collaboration
+                work_history_scores["organization_count"] = 6  # Good
             elif org_count >= 2:
-                work_history_scores["organization_count"] = 4  # Some collaboration
+                work_history_scores["organization_count"] = 4  # Some
             elif org_count >= 1:
-                work_history_scores["organization_count"] = 2  # Single organization
+                work_history_scores["organization_count"] = 2  # Single org
             else:
                 work_history_scores["organization_count"] = 0  # No work
 
@@ -325,7 +373,11 @@ def calculate_enhanced_collaboration_index(
 
     # Calculate final enhanced score
     enhanced_score = (
-        base_score + asset_density_score + coverage_score + total_designation_score + total_work_history_score
+        base_score
+        + asset_density_score
+        + coverage_score
+        + total_designation_score
+        + total_work_history_score
     )
 
     return {
@@ -364,6 +416,30 @@ def calculate_enhanced_collaboration_index(
     }
 
 
+def calculate_collaboration_index(
+    location_type, sector_type, ttro_required, installation_method
+):
+    """Calculate basic collaboration index (fallback)"""
+    if (
+        not location_type
+        or not sector_type
+        or not ttro_required
+        or not installation_method
+    ):
+        return 0
+
+    location_score = location_type.score
+    sector_score = sector_type.score
+    ttro_score = ttro_required.score
+    installation_score = installation_method.score
+
+    collaboration_index = (
+        location_score + sector_score + ttro_score + installation_score
+    )
+
+    return collaboration_index
+
+
 def get_collaboration_recommendation(score):
     """Get collaboration recommendation based on score"""
     if score >= 80:
@@ -396,6 +472,7 @@ def get_collaboration_recommendation(score):
         }
 
 
+# DISPLAY INDEX AND FORM DATAA
 def display_enhanced_collaboration_index(
     collaboration_data, location_type, sector_type, ttro_required, installation_method
 ):
@@ -432,31 +509,49 @@ def display_enhanced_collaboration_index(
     st.markdown(
         f"""
         <div class="collaboration-index">
-            <h2>🤝 Enhanced Collaboration Index</h2>
+            <h2>🤝 Collaboration Index</h2>
             <div class="collaboration-score">{score}</div>
             <div class="collaboration-subtitle">
-                <strong>Base Factors:</strong> Location ({breakdown["base_factors"]["location"]}) + 
+                <strong>Base Factors:</strong> Location ({
+            breakdown["base_factors"]["location"]
+        }) + 
                 Sector ({breakdown["base_factors"]["sector"]}) + 
                 TTRO ({breakdown["base_factors"]["ttro"]}) + 
-                Installation ({breakdown["base_factors"]["installation"]}) = {breakdown["base_factors"]["subtotal"]}
+                Installation ({breakdown["base_factors"]["installation"]}) = {
+            breakdown["base_factors"]["subtotal"]
+        }
             </div>
-            {f'''<div class="collaboration-subtitle">
+            {
+            f'''<div class="collaboration-subtitle">
                 <strong>Asset Factors:</strong> Density {breakdown["asset_metrics"]["asset_density"]}/grid ({breakdown["nuar_factors"]["asset_density"]}) + 
                 Coverage {breakdown["asset_metrics"]["hex_grids"]} grids ({breakdown["nuar_factors"]["coverage"]}) = {breakdown["nuar_factors"]["subtotal"]}
-            </div>''' if breakdown.get("asset_metrics") else f'''<div class="collaboration-subtitle">
+            </div>'''
+            if breakdown.get("asset_metrics")
+            else f'''<div class="collaboration-subtitle">
                 <strong>Asset Factors:</strong> Density ({breakdown["nuar_factors"]["asset_density"]}) + 
                 Coverage ({breakdown["nuar_factors"]["coverage"]}) = {breakdown["nuar_factors"]["subtotal"]}
-            </div>'''}
+            </div>'''
+        }
             <div class="collaboration-subtitle">
-                <strong>Designation Factors:</strong> Winter Maint. ({breakdown["designation_factors"]["winter_maintenance"]}) + 
-                Traffic Sensitive ({breakdown["designation_factors"]["traffic_sensitive"]}) + 
-                Env. Sensitive ({breakdown["designation_factors"]["environmentally_sensitive"]}) = {breakdown["designation_factors"]["subtotal"]}
+                <strong>Designation Factors:</strong> Winter Maint. ({
+            breakdown["designation_factors"]["winter_maintenance"]
+        }) + 
+                Traffic Sensitive ({
+            breakdown["designation_factors"]["traffic_sensitive"]
+        }) + 
+                Env. Sensitive ({
+            breakdown["designation_factors"]["environmentally_sensitive"]
+        }) = {breakdown["designation_factors"]["subtotal"]}
             </div>
-            {f'''<div class="collaboration-subtitle">
+            {
+            f'''<div class="collaboration-subtitle">
                 <strong>Work History Factors:</strong> {breakdown["work_history_details"]["organization_count"]} Orgs ({breakdown["work_history_factors"]["organization_count"]}) + 
                 {breakdown["work_history_details"]["total_works"]} Works ({breakdown["work_history_factors"]["total_works"]}) + 
                 {breakdown["work_history_details"]["sector_count"]} Sectors ({breakdown["work_history_factors"]["multi_sector_bonus"]}) = {breakdown["work_history_factors"]["subtotal"]}
-            </div>''' if has_work_history else ''}
+            </div>'''
+            if has_work_history
+            else ""
+        }
         </div>
     """,
         unsafe_allow_html=True,
@@ -473,30 +568,6 @@ def display_enhanced_collaboration_index(
     """,
         unsafe_allow_html=True,
     )
-
-
-def calculate_collaboration_index(
-    location_type, sector_type, ttro_required, installation_method
-):
-    """Calculate basic collaboration index (fallback)"""
-    if (
-        not location_type
-        or not sector_type
-        or not ttro_required
-        or not installation_method
-    ):
-        return 0
-
-    location_score = location_type.score
-    sector_score = sector_type.score
-    ttro_score = ttro_required.score
-    installation_score = installation_method.score
-
-    collaboration_index = (
-        location_score + sector_score + ttro_score + installation_score
-    )
-
-    return collaboration_index
 
 
 def display_form_data(form_data):
@@ -674,6 +745,7 @@ def display_street_info(street_info_data):
     with st.expander("📋 Raw API Response", expanded=False):
         st.json(street_info_data)
 
+
 # MAP
 @st.cache_resource
 def connect_to_motherduck() -> duckdb.DuckDBPyConnection:
@@ -689,7 +761,7 @@ def connect_to_motherduck() -> duckdb.DuckDBPyConnection:
         raise ValueError("Env variable not present")
 
     # Connection string
-    connection_string = f'md:{database}?motherduck_token={token}'
+    connection_string = f"md:{database}?motherduck_token={token}"
 
     # Attempt connection
     try:
@@ -699,7 +771,10 @@ def connect_to_motherduck() -> duckdb.DuckDBPyConnection:
         logger.warning(f"An error occured: {e}")
         raise
 
-def remove_z(geom: Union[LineString, MultiLineString, Point, MultiPoint]) -> Union[LineString, MultiLineString, Point, MultiPoint]:
+
+def remove_z(
+    geom: Union[LineString, MultiLineString, Point, MultiPoint],
+) -> Union[LineString, MultiLineString, Point, MultiPoint]:
     """Remove Z coordinates from geometry objects"""
     if isinstance(geom, LineString):
         return LineString([(x, y) for x, y, *_ in geom.coords])
@@ -714,7 +789,10 @@ def remove_z(geom: Union[LineString, MultiLineString, Point, MultiPoint]) -> Uni
         return MultiPoint(cast(List[Point], points))
     return geom
 
-def convert_to_geodf_from_wkt(df: pd.DataFrame, geometry_col: str = 'geometry') -> gpd.GeoDataFrame:
+
+def convert_to_geodf_from_wkt(
+    df: pd.DataFrame, geometry_col: str = "geometry"
+) -> gpd.GeoDataFrame:
     """
     Takes in a pandas dataframe with WKT geometry and returns a geodataframe
     Ensure that the crs is set to EPSG:4326 and removes Z coordinates if present
@@ -722,13 +800,13 @@ def convert_to_geodf_from_wkt(df: pd.DataFrame, geometry_col: str = 'geometry') 
     # Check that DataFrame is not empty
     if df is None or df.empty:
         raise ValueError("Input DataFrame is None or empty")
-    
+
     # Convert WKT to geometry and remove the Z coordinates if present
-    df['geometry'] = gpd.GeoSeries.from_wkt(df[geometry_col]).apply(remove_z)
+    df["geometry"] = gpd.GeoSeries.from_wkt(df[geometry_col]).apply(remove_z)
 
     # Create GeoDataFrame and ensure correct crs
     # Assuming source data is in British National Grid (EPSG:27700)
-    geodf = gpd.GeoDataFrame(df, geometry='geometry', crs="EPSG:27700") # type: ignore
+    geodf = gpd.GeoDataFrame(df, geometry="geometry", crs="EPSG:27700")  # type: ignore
 
     # Convert to EPSG:4326 (WGS84)
     geodf = geodf.to_crs(epsg=4326)
@@ -738,13 +816,14 @@ def convert_to_geodf_from_wkt(df: pd.DataFrame, geometry_col: str = 'geometry') 
     assert geodf.crs is not None and geodf.crs.to_epsg() == 4326
     return geodf
 
+
 def fetch_usrn_geometry(usrn: str) -> Optional[gpd.GeoDataFrame]:
     """
     Fetch geometry for a given USRN from MotherDuck
     """
     try:
         con = connect_to_motherduck()
-        
+
         # Get schema and table from secrets
         schema = st.secrets["USRN_SCHEMA"]
         table_name = st.secrets["USRN_TABLE"]
@@ -764,42 +843,48 @@ def fetch_usrn_geometry(usrn: str) -> Optional[gpd.GeoDataFrame]:
 
         # Execute query
         df = con.execute(query, [usrn]).df()
-        
+
         if df.empty:
             logger.warning(f"No geometry found for USRN: {usrn}")
             return None
-            
+
         # Convert to GeoDataFrame
         geodf = convert_to_geodf_from_wkt(df)
-        
+
         return geodf
-        
+
     except Exception as e:
         logger.error(f"Error fetching USRN geometry: {e}")
         st.error(f"Error fetching geometry for USRN {usrn}: {e}")
         return None
 
+
 def filter_hex_grids_by_usrn_intersection(hex_gdf, usrn_gdf):
     """Filter hex grids to only those that intersect with the USRN geometry (no buffer)"""
     if hex_gdf is None or hex_gdf.empty or usrn_gdf is None or usrn_gdf.empty:
         return None
-    
+
     # Ensure both GeoDataFrames are in the same CRS
     if hex_gdf.crs != usrn_gdf.crs:
         hex_gdf = hex_gdf.to_crs(usrn_gdf.crs)
-    
-    # Get the USRN geometry 
+
+    # Get the USRN geometry
     usrn_geometry = usrn_gdf.geometry.unary_union
-    
+
     # Filter hex grids that intersect with USRN
     intersecting_mask = hex_gdf.geometry.intersects(usrn_geometry)
     filtered_hex_gdf = hex_gdf[intersecting_mask].copy()
-    
-    logger.info(f"Filtered hex grids by intersection: {len(hex_gdf)} -> {len(filtered_hex_gdf)}")
-    
+
+    logger.info(
+        f"Filtered hex grids by intersection: {len(hex_gdf)} -> {len(filtered_hex_gdf)}"
+    )
+
     return filtered_hex_gdf if not filtered_hex_gdf.empty else None
 
-def plot_usrn_map_with_hex_grids(geodf: gpd.GeoDataFrame, usrn: str, street_info_data=None):
+
+def plot_usrn_map_with_hex_grids(
+    geodf: gpd.GeoDataFrame, usrn: str, street_info_data=None
+):
     """Plot USRN geometry on a map with filtered hex grids from NUAR data"""
     try:
         if not isinstance(geodf, gpd.GeoDataFrame):
@@ -814,13 +899,13 @@ def plot_usrn_map_with_hex_grids(geodf: gpd.GeoDataFrame, usrn: str, street_info
             stats = street_info_data.get("stats", {})
             nuar_summary = stats.get("nuar_summary", {})
             hex_ids = nuar_summary.get("hex_ids", [])
-            
+
             if hex_ids:
                 all_hex_gdf = create_hex_grids_geodataframe(hex_ids)
                 if all_hex_gdf is not None and not all_hex_gdf.empty:
                     # Filter to only hex grids that intersect the USRN
                     hex_gdf = filter_hex_grids_by_usrn_intersection(all_hex_gdf, geodf)
-                    
+
                     if hex_gdf is not None and not hex_gdf.empty:
                         # Expand bounds to include filtered hex grids
                         hex_bounds = hex_gdf.total_bounds
@@ -828,12 +913,14 @@ def plot_usrn_map_with_hex_grids(geodf: gpd.GeoDataFrame, usrn: str, street_info
                             min(total_bounds[0], hex_bounds[0]),  # min x
                             min(total_bounds[1], hex_bounds[1]),  # min y
                             max(total_bounds[2], hex_bounds[2]),  # max x
-                            max(total_bounds[3], hex_bounds[3])   # max y
+                            max(total_bounds[3], hex_bounds[3]),  # max y
                         ]
 
         # Create the map and set bounds to the data area
         m = folium.Map(tiles="cartodbpositron")
-        m.fit_bounds([[total_bounds[1], total_bounds[0]], [total_bounds[3], total_bounds[2]]])
+        m.fit_bounds(
+            [[total_bounds[1], total_bounds[0]], [total_bounds[3], total_bounds[2]]]
+        )
 
         # Add hex grids first (so they appear behind the street)
         if hex_gdf is not None and not hex_gdf.empty:
@@ -842,71 +929,73 @@ def plot_usrn_map_with_hex_grids(geodf: gpd.GeoDataFrame, usrn: str, street_info
                 stats = street_info_data.get("stats", {})
                 nuar_summary = stats.get("nuar_summary", {})
                 hex_ids = nuar_summary.get("hex_ids", [])
-                
+
                 # Calculate min/max from original data, not filtered data
                 all_asset_counts = [item.get("asset_count", 0) for item in hex_ids]
                 min_assets = min(all_asset_counts) if all_asset_counts else 0
                 max_assets = max(all_asset_counts) if all_asset_counts else 0
                 asset_range = max_assets - min_assets
             else:
-                min_assets = hex_gdf['asset_count'].min()
-                max_assets = hex_gdf['asset_count'].max()
+                min_assets = hex_gdf["asset_count"].min()
+                max_assets = hex_gdf["asset_count"].max()
                 asset_range = max_assets - min_assets
-            
+
             for _, row in hex_gdf.iterrows():
                 if row.geometry is not None and not row.geometry.is_empty:
-                    asset_count = row.get('asset_count', 0)
-                    
+                    asset_count = row.get("asset_count", 0)
+
                     # Use the original full dataset range for color scaling
                     if asset_range <= 5:  # Low variance threshold
                         if max_assets > min_assets:
-                            intensity = (asset_count - min_assets) / asset_range * 0.5  # Scale to 0-0.5
+                            intensity = (
+                                (asset_count - min_assets) / asset_range * 0.5
+                            )  # Scale to 0-0.5
                         else:
                             intensity = 0.25  # Middle of the narrow range
-                        
+
                         if intensity <= 0.1:
-                            color = '#e3f2fd'  # Very light blue
-                            fill_color = '#e3f2fd'
+                            color = "#e3f2fd"  # Very light blue
+                            fill_color = "#e3f2fd"
                         elif intensity <= 0.25:
-                            color = '#bbdefb'  # Light blue
-                            fill_color = '#bbdefb'
+                            color = "#bbdefb"  # Light blue
+                            fill_color = "#bbdefb"
                         else:
-                            color = '#90caf9'  # Medium light blue
-                            fill_color = '#90caf9'
+                            color = "#90caf9"  # Medium light blue
+                            fill_color = "#90caf9"
                     else:
                         # Normal scaling for high variance
                         intensity = (asset_count - min_assets) / asset_range
-                        
+
                         if intensity <= 0.2:
-                            color = '#e3f2fd'  # Very light blue
-                            fill_color = '#e3f2fd'
+                            color = "#e3f2fd"  # Very light blue
+                            fill_color = "#e3f2fd"
                         elif intensity <= 0.4:
-                            color = '#90caf9'  # Light blue
-                            fill_color = '#90caf9'
+                            color = "#90caf9"  # Light blue
+                            fill_color = "#90caf9"
                         elif intensity <= 0.6:
-                            color = '#42a5f5'  # Medium blue
-                            fill_color = '#42a5f5'
+                            color = "#42a5f5"  # Medium blue
+                            fill_color = "#42a5f5"
                         elif intensity <= 0.8:
-                            color = '#1e88e5'  # Dark blue
-                            fill_color = '#1e88e5'
+                            color = "#1e88e5"  # Dark blue
+                            fill_color = "#1e88e5"
                         else:
-                            color = '#0d47a1'  # Very dark blue
-                            fill_color = '#0d47a1'
-                    
+                            color = "#0d47a1"  # Very dark blue
+                            fill_color = "#0d47a1"
+
                     folium.GeoJson(
                         row.geometry.__geo_interface__,
                         style_function=lambda x, color=color, fill_color=fill_color: {
-                            'color': color,
-                            'weight': 2,
-                            'opacity': 0.7,
-                            'fillColor': fill_color,
-                            'fillOpacity': 0.4
+                            "color": color,
+                            "weight": 2,
+                            "opacity": 0.7,
+                            "fillColor": fill_color,
+                            "fillOpacity": 0.4,
                         },
                         tooltip=folium.Tooltip(
                             f"Hex Grid: {row.get('grid_id', 'Unknown')}<br>"
                             f"Asset Count: {row.get('asset_count', 0)}<br>"
                             f"Zoom Level: {row.get('zoom_level', 'Unknown')}"
-                        )
+                        ),
                     ).add_to(m)
 
         # Add USRN features to map - style for USRN roads (on top)
@@ -915,24 +1004,23 @@ def plot_usrn_map_with_hex_grids(geodf: gpd.GeoDataFrame, usrn: str, street_info
                 folium.GeoJson(
                     row.geometry.__geo_interface__,
                     style_function=lambda x: {
-                        'color': '#ff6b6b',
-                        'weight': 6,
-                        'opacity': 0.9
+                        "color": "#ff6b6b",
+                        "weight": 6,
+                        "opacity": 0.9,
                     },
                     tooltip=folium.Tooltip(
-                        f"USRN: {row.get('usrn', usrn)}<br>"
-                        f"Street Reference"
-                    )
+                        f"USRN: {row.get('usrn', usrn)}<br>Street Reference"
+                    ),
                 ).add_to(m)
 
         # Add legend for hex grids if they exist
         if hex_gdf is not None and not hex_gdf.empty:
-            min_assets = hex_gdf['asset_count'].min()
-            max_assets = hex_gdf['asset_count'].max()
+            min_assets = hex_gdf["asset_count"].min()
+            max_assets = hex_gdf["asset_count"].max()
             asset_range = max_assets - min_assets
-            
+
             if asset_range <= 5:  # Low variance
-                legend_html = f'''
+                legend_html = f"""
 <div style="position: fixed; 
             bottom: 50px; right: 50px; width: 240px; height: 110px; 
             background-color: white; border:2px solid grey; z-index:9999; 
@@ -943,9 +1031,9 @@ def plot_usrn_map_with_hex_grids(geodf: gpd.GeoDataFrame, usrn: str, street_info
 <p><span style="color:#e3f2fd; background:#e3f2fd;">⬣</span> {min_assets} assets</p>
 <p><span style="color:#90caf9; background:#90caf9;">⬣</span> {max_assets} assets</p>
 </div>
-'''
+"""
             else:  # Normal variance
-                legend_html = f'''
+                legend_html = f"""
 <div style="position: fixed; 
             bottom: 50px; right: 50px; width: 220px; height: 150px; 
             background-color: white; border:2px solid grey; z-index:9999; 
@@ -958,8 +1046,8 @@ def plot_usrn_map_with_hex_grids(geodf: gpd.GeoDataFrame, usrn: str, street_info
 <p><span style="color:#1e88e5; background:#1e88e5;">⬣</span> High</p>
 <p><span style="color:#0d47a1; background:#0d47a1;">⬣</span> Very High ({max_assets})</p>
 </div>
-'''
-            
+"""
+
             m.get_root().add_child(folium.Element(legend_html))
 
         # Display map using folium_static - responsive width
@@ -971,12 +1059,13 @@ def plot_usrn_map_with_hex_grids(geodf: gpd.GeoDataFrame, usrn: str, street_info
         logger.error(f"Error occurred while plotting map: {e}")
         raise
 
+
 def display_usrn_map_enhanced(usrn: str, street_info_data=None):
     """Display USRN geometry on a map with NUAR hex grids if available"""
     try:
         with st.spinner(f"Loading geometry for USRN {usrn}..."):
             geodf = fetch_usrn_geometry(usrn)
-            
+
         if geodf is not None and not geodf.empty:
             # Check if we have NUAR data
             has_nuar_data = False
@@ -985,15 +1074,16 @@ def display_usrn_map_enhanced(usrn: str, street_info_data=None):
                 nuar_summary = stats.get("nuar_summary", {})
                 hex_ids = nuar_summary.get("hex_ids", [])
                 has_nuar_data = len(hex_ids) > 0
-            
+
             if has_nuar_data:
                 st.info(" Underground asset data (NUAR) overlayed on map as hex grids")
-            
+
             # Plot the enhanced map
             plot_usrn_map_with_hex_grids(geodf, usrn, street_info_data)
-            
+
             # Custom CSS for the info cards
-            st.markdown("""
+            st.markdown(
+                """
             <style>
             .info-card {
                 background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
@@ -1033,19 +1123,22 @@ def display_usrn_map_enhanced(usrn: str, street_info_data=None):
                 border-left: 4px solid #28a745;
             }
             </style>
-            """, unsafe_allow_html=True)
+            """,
+                unsafe_allow_html=True,
+            )
 
             col1, col2 = st.columns(2)
 
             with col1:
                 # Calculate length if it's a LineString
-                if hasattr(geodf.geometry.iloc[0], 'length'):
+                if hasattr(geodf.geometry.iloc[0], "length"):
                     length_meters = geodf.to_crs(epsg=3857).geometry.length.iloc[0]
                     length_display = f"{length_meters:.1f}m"
                 else:
                     length_display = "N/A"
-                
-                st.markdown(f"""
+
+                st.markdown(
+                    f"""
                 <div class="info-card">
                     <h4> Street Geometry</h4>
                     <div class="metric-item">
@@ -1057,7 +1150,9 @@ def display_usrn_map_enhanced(usrn: str, street_info_data=None):
                         <span class="metric-value">{length_display}</span>
                     </div>
                 </div>
-                """, unsafe_allow_html=True)
+                """,
+                    unsafe_allow_html=True,
+                )
 
             with col2:
                 if has_nuar_data:
@@ -1066,18 +1161,32 @@ def display_usrn_map_enhanced(usrn: str, street_info_data=None):
                         stats = street_info_data.get("stats", {})
                         nuar_summary = stats.get("nuar_summary", {})
                         hex_ids = nuar_summary.get("hex_ids", [])
-                        
+
                         if hex_ids:
                             all_hex_gdf = create_hex_grids_geodataframe(hex_ids)
                             if all_hex_gdf is not None and not all_hex_gdf.empty:
-                                filtered_hex_gdf = filter_hex_grids_by_usrn_intersection(all_hex_gdf, geodf)
-                                
-                                if filtered_hex_gdf is not None and not filtered_hex_gdf.empty:
-                                    filtered_total_assets = filtered_hex_gdf['asset_count'].sum()
+                                filtered_hex_gdf = (
+                                    filter_hex_grids_by_usrn_intersection(
+                                        all_hex_gdf, geodf
+                                    )
+                                )
+
+                                if (
+                                    filtered_hex_gdf is not None
+                                    and not filtered_hex_gdf.empty
+                                ):
+                                    filtered_total_assets = filtered_hex_gdf[
+                                        "asset_count"
+                                    ].sum()
                                     filtered_total_grids = len(filtered_hex_gdf)
-                                    filtered_density = filtered_total_assets / filtered_total_grids if filtered_total_grids > 0 else 0
-                                    
-                                    st.markdown(f"""
+                                    filtered_density = (
+                                        filtered_total_assets / filtered_total_grids
+                                        if filtered_total_grids > 0
+                                        else 0
+                                    )
+
+                                    st.markdown(
+                                        f"""
                                     <div class="info-card asset-card">
                                         <h4>Underground Assets</h4>
                                         <div class="metric-item">
@@ -1093,16 +1202,22 @@ def display_usrn_map_enhanced(usrn: str, street_info_data=None):
                                             <span class="metric-value">{filtered_density:.1f}/grid</span>
                                         </div>
                                     </div>
-                                    """, unsafe_allow_html=True)
+                                    """,
+                                        unsafe_allow_html=True,
+                                    )
                                 else:
-                                    st.markdown("""
+                                    st.markdown(
+                                        """
                                     <div class="info-card asset-card">
                                         <h4>Underground Assets</h4>
                                         <p style="margin: 0; color: #6c757d; font-style: italic;">No hex grids intersect with this USRN</p>
                                     </div>
-                                    """, unsafe_allow_html=True)
+                                    """,
+                                        unsafe_allow_html=True,
+                                    )
                 else:
-                    st.markdown("""
+                    st.markdown(
+                        """
                     <div class="info-card">
                         <h4>📊 Additional Info</h4>
                         <div class="metric-item">
@@ -1111,11 +1226,13 @@ def display_usrn_map_enhanced(usrn: str, street_info_data=None):
                         </div>
                         <p style="margin: 0.5rem 0 0 0; color: #6c757d; font-style: italic;">No underground asset data available</p>
                     </div>
-                    """, unsafe_allow_html=True)
-            
+                    """,
+                        unsafe_allow_html=True,
+                    )
+
         else:
             st.warning(f"No geometry found for USRN: {usrn}")
-            
+
     except Exception as e:
         st.error(f"Error loading geometry: {e}")
 
@@ -1274,18 +1391,18 @@ def main():
                 st.session_state.form_data.get("ttro_required_enum"),
                 st.session_state.form_data.get("installation_method_enum"),
             )
-        
+
         # ENHANCED MAP WITH HEX GRIDS - AFTER THE COLLABORATION INDEX
         # Display USRN geometry map with NUAR hex grids
         usrn = st.session_state.form_data.get("usrn")
         street_info = st.session_state.form_data.get("street_info")
         if usrn:
             display_usrn_map_enhanced(usrn, street_info)
-        
+
         # Hide detailed information under collapsible sections
         with st.expander("📋 View Submission Details", expanded=False):
             display_form_data(st.session_state.form_data)
-        
+
         # Add this to display the street info under another collapsible section
         if st.session_state.form_data.get("street_info"):
             with st.expander("🗺️ View Street Information & Analysis", expanded=False):
@@ -1487,7 +1604,7 @@ def main():
                         "sector_type_enum": sector_type,
                         "ttro_required_enum": ttro_required,
                         "installation_method_enum": installation_method,
-                        "street_info": street_info, 
+                        "street_info": street_info,
                     }
 
                     st.success("✅ Street works data submitted successfully!")
