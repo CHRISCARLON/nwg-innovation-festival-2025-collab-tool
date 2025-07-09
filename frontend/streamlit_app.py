@@ -204,7 +204,12 @@ def calculate_enhanced_collaboration_index(
         "total_works": 0,
         "multi_sector_bonus": 0,
     }
-    work_history_details = {}
+    work_history_details = {
+        "organizations": [],
+        "organization_count": 0,
+        "sector_count": 0,
+        "total_works": 0,
+    }
 
     if street_info_data:
         stats = street_info_data.get("stats", {})
@@ -360,11 +365,12 @@ def calculate_enhanced_collaboration_index(
             elif sector_count >= 2:
                 work_history_scores["multi_sector_bonus"] = 3  # Some diversity
 
+            # At the end of the work history processing section, always set work_history_details:
             work_history_details = {
-                "organizations": work_organizations,
-                "organization_count": org_count,
-                "sector_count": sector_count,
-                "total_works": total_works_count,
+                "organizations": work_organizations if 'work_organizations' in locals() else [],
+                "organization_count": org_count if 'org_count' in locals() else 0,
+                "sector_count": sector_count if 'sector_count' in locals() else 0,
+                "total_works": total_works_count if 'total_works_count' in locals() else 0,
             }
 
     # Calculate totals
@@ -545,9 +551,9 @@ def display_enhanced_collaboration_index(
             </div>
             {
             f'''<div class="collaboration-subtitle">
-                <strong>Work History Factors:</strong> {breakdown["work_history_details"]["organization_count"]} Orgs ({breakdown["work_history_factors"]["organization_count"]}) + 
-                {breakdown["work_history_details"]["total_works"]} Works ({breakdown["work_history_factors"]["total_works"]}) + 
-                {breakdown["work_history_details"]["sector_count"]} Sectors ({breakdown["work_history_factors"]["multi_sector_bonus"]}) = {breakdown["work_history_factors"]["subtotal"]}
+                <strong>Work History Factors:</strong> {breakdown["work_history_details"].get("organization_count", 0)} Orgs ({breakdown["work_history_factors"]["organization_count"]}) + 
+                {breakdown["work_history_details"].get("total_works", 0)} Works ({breakdown["work_history_factors"]["total_works"]}) + 
+                {breakdown["work_history_details"].get("sector_count", 0)} Sectors ({breakdown["work_history_factors"]["multi_sector_bonus"]}) = {breakdown["work_history_factors"]["subtotal"]}
             </div>'''
             if has_work_history
             else ""
@@ -863,22 +869,20 @@ def filter_hex_grids_by_usrn_intersection(hex_gdf, usrn_gdf):
     """Filter hex grids to only those that intersect with the USRN geometry (no buffer)"""
     if hex_gdf is None or hex_gdf.empty or usrn_gdf is None or usrn_gdf.empty:
         return None
-
+    
     # Ensure both GeoDataFrames are in the same CRS
     if hex_gdf.crs != usrn_gdf.crs:
         hex_gdf = hex_gdf.to_crs(usrn_gdf.crs)
-
-    # Get the USRN geometry
-    usrn_geometry = usrn_gdf.geometry.unary_union
-
+    
+    # Get the USRN geometry - use union_all() instead of unary_union
+    usrn_geometry = usrn_gdf.geometry.union_all()
+    
     # Filter hex grids that intersect with USRN
     intersecting_mask = hex_gdf.geometry.intersects(usrn_geometry)
     filtered_hex_gdf = hex_gdf[intersecting_mask].copy()
-
-    logger.info(
-        f"Filtered hex grids by intersection: {len(hex_gdf)} -> {len(filtered_hex_gdf)}"
-    )
-
+    
+    logger.info(f"Filtered hex grids by intersection: {len(hex_gdf)} -> {len(filtered_hex_gdf)}")
+    
     return filtered_hex_gdf if not filtered_hex_gdf.empty else None
 
 
