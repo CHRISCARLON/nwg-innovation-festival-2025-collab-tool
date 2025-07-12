@@ -42,6 +42,10 @@ run-frontend: load-env
 	@echo "Starting frontend with environment loaded..."
 	@set -a && source backend/.env && set +a && cd frontend && streamlit run streamlit_app.py
 
+run-frontend-multi-usrn: load-env
+	@echo "Starting frontend with environment loaded..."
+	@set -a && source backend/.env && set +a && cd frontend && streamlit run multi_usrn_app.py
+	
 # Development helpers
 dev-backend: load-env
 	@echo "Starting backend in development mode..."

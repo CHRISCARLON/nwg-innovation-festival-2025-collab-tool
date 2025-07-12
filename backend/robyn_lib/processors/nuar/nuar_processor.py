@@ -15,7 +15,8 @@ async def get_nuar_asset_count(bbox: str) -> Dict[str, Any]:
     """
     try:
         # Construct the NUAR API endpoint
-        base_url = "https://innovation.nuar-data-services.uk/services/generalised-data/api/v1/metrics/AssetCount/nuar/12/"
+        # TODO make the zoom level a parameter
+        base_url = "https://innovation.nuar-data-services.uk/services/generalised-data/api/v1/metrics/AssetCount/nuar/11/"
         endpoint = f"{base_url}?bbox={bbox}"
 
         logger.info(f"Fetching NUAR asset count for bbox: {bbox}")

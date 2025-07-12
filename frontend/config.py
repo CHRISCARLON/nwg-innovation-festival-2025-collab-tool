@@ -5,17 +5,15 @@ class PromoterOrganisation(Enum):
     NORTHUMBRIAN_WATER = "Northumbrian Water"
     NORTHERN_GAS_NETWORKS = "Northern Gas Networks"
     NEWCASTLE_CITY_COUNCIL = "Newcastle City Council"
-    DURHAM_COUNTY_COUNCIL = "Durham County Council"
 
     def __str__(self) -> str:
         return self.value
 
 
 class SWACode(Enum):
-    NORTHUMBRIAN_WATER = ("SWA001", "Northumbrian Water")
-    NORTHERN_GAS_NETWORKS = ("SWA002", "Northern Gas Networks")
-    NEWCASTLE_CITY_COUNCIL = ("SWA003", "Newcastle City Council")
-    DURHAM_COUNTY_COUNCIL = ("SWA004", "Durham County Council")
+    NORTHUMBRIAN_WATER = ("9101", "Northumbrian Water")
+    NORTHERN_GAS_NETWORKS = ("7271", "Northern Gas Networks")
+    NEWCASTLE_CITY_COUNCIL = ("4510", "Newcastle City Council")
 
     def __init__(self, code: str, name: str):
         self.code = code

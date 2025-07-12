@@ -9,7 +9,6 @@ from robyn_lib.services.services import (
 )
 
 # TODO improve error handling
-
 # DEFINE APP AND LOGGER
 app = Robyn(__file__)
 logger = Logger()
