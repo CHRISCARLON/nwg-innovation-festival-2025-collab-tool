@@ -1,6 +1,9 @@
+import os
+
 from typing import Dict, Any
 from loguru import logger
 from os_lib.request_functions import fetch_nuar_data
+
 
 
 async def get_nuar_asset_count(bbox: str) -> Dict[str, Any]:
@@ -16,7 +19,7 @@ async def get_nuar_asset_count(bbox: str) -> Dict[str, Any]:
     try:
         # Construct the NUAR API endpoint
         # TODO make the zoom level a parameter
-        base_url = "https://innovation.nuar-data-services.uk/services/generalised-data/api/v1/metrics/AssetCount/nuar/11/"
+        base_url = f"{os.getenv('NUAR_API_URL')}metrics/AssetCount/nuar/11/"
         endpoint = f"{base_url}?bbox={bbox}"
 
         logger.info(f"Fetching NUAR asset count for bbox: {bbox}")
